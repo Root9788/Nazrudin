@@ -33,7 +33,7 @@
     "primaryTokenAttribute": "health",
     "secondaryTokenAttribute": "power",
     "manifest": "",
-    "download": "",
+    "download": "https://github.com/Root9788/Nazrudin/releases/tag/Nazrudin-01.zip",
     "grid": {
         "distance": 5,
         "units": "ft"
