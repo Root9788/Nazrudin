@@ -17,12 +17,6 @@
     "styles": [
     ],
     "languages": [
-        {
-        "lang": "en",
-        "name": "English",
-        "path": "lang/en.json",
-        "flags": {}
-        }
     ],
     "compatibility": {
         "minimum": "10",
