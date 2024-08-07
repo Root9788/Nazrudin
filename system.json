@@ -13,10 +13,8 @@
         }
     ],
     "esmodules": [
-        "module/nazrudin.js"
     ],
     "styles": [
-        "styles/nazrudin.css"
     ],
     "languages": [
         {
