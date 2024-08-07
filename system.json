@@ -1,0 +1,25 @@
+{
+    "name":"Nazrudin",
+    "title":"Nazrudin",
+    "description":"" ,
+    "author":"Root88",
+    "version": 0.01,
+    "minimumCoreVersion":"12.330",
+    "compatipleCoreVersion":"12.330",
+    "esmodules":[
+        "nazrudin.js"
+    ],
+    "styles":[
+        "nazrudin.css"
+    ],
+    "packs":[
+
+    ],
+    "languages":[
+
+    ],
+    "gridDistance": 5,
+    "gridUnits": "ft",
+    "primaryTokenAttribute": "Health",
+    "initiative": "1d20 + @iniValue"
+}
