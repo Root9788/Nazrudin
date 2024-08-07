@@ -25,8 +25,8 @@
       "minimum": 11,
       "verified": "11.315"
     },
-    "esmodules": ["module/nazrudin.js"],
-    "styles": ["css/nazrudin.css"],
+    "esmodules": [],
+    "styles": [],
     "languages": [
       {
         "lang": "en",
