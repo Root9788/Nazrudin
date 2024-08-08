@@ -1,12 +1,12 @@
 {
   "BOILERPLATE": {
     "Ability": {
-      "Str": { "long": "Strength", "abbr": "str" },
-      "Con": { "long": "Constitution", "abbr": "con" },
-      "Dex": { "long": "Dexterity", "abbr": "dex" },
-      "Int": { "long": "Intelligence", "abbr": "int" },
-      "Wis": { "long": "Wisdom", "abbr": "wis" },
-      "Cha": { "long": "Charisma", "abbr": "cha" }
+      "GES": { "long": "Geschicklichkeit", "abbr": "ges" },
+      "AGI": { "long": "Agilität", "abbr": "agi" },
+      "GEN": { "long": "Genauigkeit", "abbr": "gen" },
+      "KON": { "long": "Konzentration", "abbr": "kon" },
+      "KKF": { "long": "Körperkraft", "abbr": "kkf" },
+      "TAL": { "long": "Talent", "abbr": "tal" }
     },
     "SheetLabels": {
       "Actor": "Boilerplate Actor Sheet",
