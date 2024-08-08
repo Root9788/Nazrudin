@@ -3,6 +3,22 @@
     
   },
   "item": {
-
+    "types": [
+        "weapon"
+    ],
+    "templates": {
+        "itemDescription": {
+            "description": ""
+        }
+    },
+    "weapon":{
+        "templates": ["itemDescription"],
+        "attackWith": "guns",
+        "damage": 0,
+        "concealment": 0,
+        "reload": 0,
+        "mookBonus": 0,
+        "pumpAction": false
+    }
   }
 }
