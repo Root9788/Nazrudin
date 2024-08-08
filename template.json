@@ -2,22 +2,32 @@
     "Actor": {
     
   },
-  "item": {
-    "types": [
-        "weapon"
-    ],
+  "Item": {
+    "types": ["item", "feature", "spell", "weapon"],
     "templates": {
-        "itemDescription": {
-            "description": ""
-        }
+      "base": {
+        "description": ""
+      }
+    },
+    "item": {
+      "templates": ["base"],
+      "quantity": 1,
+      "weight": 0,
+      "formula": "d20"
+    },
+    "feature": {
+      "templates": ["base"]
+    },
+    "spell": {
+      "templates": ["base"],
+      "spellLevel": 1
     },
     "weapon":{
-        "templates": ["itemDescription"],
+        "templates":["base"],
         "attackWith": "guns",
         "damage": 0,
-        "concealment": 0,
         "reload": 0,
-        "mookBonus": 0,
+        "dmgBonus": 0,
         "pumpAction": false
     }
   }

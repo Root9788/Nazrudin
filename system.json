@@ -22,6 +22,12 @@
         "minimum": "10",
         "verified": "12"
     },
+    "documentTypes":{
+        "Item":{
+            "weapon": {},
+            "spell": {}
+        }
+    },
     "primaryTokenAttribute": "health",
     "secondaryTokenAttribute": "power",
     "manifest": "",
