@@ -1,8 +1,55 @@
 {
-    "Actor":{
-
+    "Actor": {
+    "types": ["character", "npc"],
+    "templates": {
+      "base": {
+        "health": {
+          "value": 80,
+          "min": 0,
+          "max": 80
+        },
+        "evasion": {
+            "value": 7
+        },
+        "conter": {
+            "value": 7
+        }
+      }
     },
-    "Item":{
-        
+    "character": {
+      "templates": ["base"],
+      "attributes": {
+        "level": {
+          "value": 1
+        }
+      },
+      "trefferstats": {
+        "Agilität": {
+          "value": 7
+        },
+        "Konzentration": {
+          "value": 7
+        },
+        "Geschick": {
+          "value": 7
+        },
+        "Körperkraft": {
+          "value": 7
+        },
+        "Genauigkeit": {
+          "value": 7
+        },
+        "Talent": {
+          "value": 7
+        }
+      }
+    },
+    "npc": {
+      "templates": ["base"],
+      "cr": 0
     }
+  },
+  "item": {
+
+  }
 }
