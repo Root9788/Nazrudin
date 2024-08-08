@@ -4,12 +4,17 @@
     "templates": {
       "base": {
         "health": {
-          "value": 13,
+          "value": 80,
           "min": 0,
-          "max": 13
+          "max": 80
         },
-        "power": {
-          "value": 5,
+        "shield": {
+          "value": 0,
+          "min": 0,
+          "max": 0
+        },
+        "xp": {
+          "value": 0,
           "min": 0,
           "max": 5
         },

@@ -14,8 +14,8 @@
     },
     "Item": {
       "Spell": {
-        "SpellLVL": "Level {level} Spells",
-        "AddLVL": "Add LVL {level}"
+        "SpellLVL": "Skill Quality {level}",
+        "AddLVL": "Add Skill {level}"
       }
     },
     "Effect": {

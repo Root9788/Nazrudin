@@ -141,3 +141,18 @@ function rollItemMacro(itemUuid) {
     item.roll();
   });
 }
+
+Hooks.on('updateActor', (actor, updateData, options, userId) => {
+
+  console.log("Triggered");
+  console.log(updateData);
+  // Prüfen, ob updateData das Feld für Lebenspunkte enthält
+  if (updateData.data && updateData.data.attributes && 'hp' in updateData.data.attributes) {
+    // Neuen Wert der Lebenspunkte extrahieren
+    const newHpValue = updateData.data.attributes.hp.value;
+    console.log("Der Wert der Lebenspunkte wurde auf ${newHpValue} geändert.");
+
+    // Optional: Weitere Aktionen durchführen
+    // Beispiel: Eine Benachrichtigung anzeigen oder spezielle Logik ausführen
+  }
+});
