@@ -18,6 +18,15 @@
           "min": 0,
           "max": 5
         },
+        "spiritXp": {
+          "value": 0
+        },
+        "openHpPoints":{
+          "value": 0
+        },
+        "openAttributePoints":{
+          "value": 0
+        },
         "biography": ""
       }
     },

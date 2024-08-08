@@ -61,13 +61,30 @@
         </div>
         
       </div>
+      <div class="resources2 grid grid-3col">
+        <!-- Existing XP, Level, and Spirit XP input fields -->
+
+        <!-- Add Reset Button -->
+        <div class="resource2 flex-group-center">
+          <div class="resource2-content flexrow flex-center flex-between">
+            <button type="button" class="reset-character-button">Reset Character</button>
+          </div>
+        </div>
+        <!-- Add XP Button -->
+        <div class="resource2 flex-group-center">
+          <div class="resource2-content flexrow flex-center flex-between">
+            <button type="button" class="add-xp-button">Add XP</button>
+          </div>
+        </div>
+        
+      </div>
     </div>
   </header>
 
   {{!-- Sheet Tab Navigation --}}
   <nav class="sheet-tabs tabs" data-group="primary">
     {{!-- Default tab is specified in actor-sheet.mjs --}}
-    <a class="item" data-tab="features">Features</a>
+    <a class="item" data-tab="features">Overview</a>
     <a class="item" data-tab="description">Description</a>
     <a class="item" data-tab="items">Items</a>
     <a class="item" data-tab="spells">Spells & Abilities</a>
@@ -96,11 +113,26 @@
         </aside>
 
         {{!-- For the main features list, span the right two columns --}}
-        <section class="main grid-span-2">
+         {{!--<section class="main grid-span-2">--}}
           {{!-- This is a Handlebars partial. They're stored in the `/parts` folder next to this sheet, and defined in module/helpers/templates.mjs --}}
-          {{> "systems/boilerplate/templates/actor/parts/actor-features.hbs"}}
+          {{!-- {{> "systems/boilerplate/templates/actor/parts/actor-features.hbs"}} --}}
+         {{!--</section>--}}
+        <section class="resources3 grid-span-2">
+          <!-- Open Points -->
+          <div class="resource2 flex-group-center">
+            <label class="resource-label">Open Points</label>
+            <div class="resource2-content flexrow flex-center flex-between">
+              <div>
+                <label for="open-hp-points">HP Points:</label>
+                <input type="number" name="open-hp-points" value="{{system.openHpPoints}}" data-dtype="Number" readonly/>
+              </div>
+              <div>
+                <label for="open-attribute-points">Attribute Points:</label>
+                <input type="number" name="open-attribute-points" value="{{system.openAttributePoints}}" data-dtype="Number" readonly/>
+              </div>
+            </div>
+          </div>
         </section>
-
       </section>
     </div>
 
