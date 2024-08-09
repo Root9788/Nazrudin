@@ -123,12 +123,18 @@
             <label class="resource-label">Open Points</label>
             <div class="resource2-content flexrow flex-center flex-between">
               <div>
-                <label for="open-hp-points">HP Points:</label>
+                <label for="open-hp-points">Vitalpunkte:</label>
                 <input type="number" name="open-hp-points" value="{{system.openHpPoints}}" data-dtype="Number" readonly/>
+                {{#if (gt system.openHpPoints 0)}}
+                  <button type="button" class="add-hp-point-button"><i class="fas fa-plus"></i></button>
+                {{/if}}
               </div>
               <div>
-                <label for="open-attribute-points">Attribute Points:</label>
+                <label for="open-attribute-points">Trefferstats:</label>
                 <input type="number" name="open-attribute-points" value="{{system.openAttributePoints}}" data-dtype="Number" readonly/>
+                {{#if (gt system.openAttributePoints 0)}}
+                  <button type="button" class="add-attribute-point-button"><i class="fas fa-plus"></i></button>
+                {{/if}}
               </div>
             </div>
           </div>

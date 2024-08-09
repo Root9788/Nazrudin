@@ -306,45 +306,143 @@ async function resetCharacter(actor) {
 }
 
 async function addXPToActor(actor, xpAmount) {
-  const currentXP = actor.system.xp.value;
-  let maxXP = actor.system.xp.max;
-  const currentLevel = actor.system.attributes.level.value;
+  const oldXP = actor.system.xp.value;
+  const oldMaxXP = actor.system.xp.max;
+  let newXP = oldXP + xpAmount;
+  let maxXP = oldMaxXP;
+  let currentLevel = actor.system.attributes.level.value;
 
-  // Calculate new XP value
-  const newXP = currentXP + xpAmount;
+  console.log(`Old XP: ${oldXP}, New XP: ${newXP}, Max XP: ${maxXP}, Current Level: ${currentLevel}`);
 
-  // Determine new level and max XP based on level thresholds
-  let newLevel = currentLevel;
-  let accumulatedMaxXP = maxXP;
-  let levelPoints = 0;
-  while (newXP >= accumulatedMaxXP) {
-    newLevel++;
-    const nextThreshold = BOILERPLATE.levelThresholds.find(threshold => threshold.level === newLevel);
+  // Check if new XP exceeds the current max XP
+  if (newXP >= maxXP) {
+    console.log("XP value has exceeded the max XP");
 
-    if (!nextThreshold) {
-      console.log("No more levels to increase.");
-      break;
+    // Continue increasing the level until the XP is below the max XP of the next level
+    let newLevel = currentLevel;
+    let accumulatedMaxXP = maxXP;
+    let levelPoints = 0;
+
+    while (newXP >= accumulatedMaxXP) {
+      newLevel++;
+      const nextThreshold = BOILERPLATE.levelThresholds.find(threshold => threshold.level === newLevel);
+
+      if (!nextThreshold) {
+        console.log("No more levels to increase.");
+        break;  // Stop if we've reached the highest level
+      }
+
+      // Add the max XP of the next level to the accumulated max XP
+      accumulatedMaxXP += nextThreshold.xp;
+      maxXP = nextThreshold.xp;
+
+      console.log(`Level increased to ${newLevel}, new accumulated Max XP is ${accumulatedMaxXP}`);
+
+      levelPoints++;  // Award a point for each level gained
     }
 
-    levelPoints++;  // Increment points for each level gained
-    accumulatedMaxXP = nextThreshold.xp;
-    maxXP = nextThreshold.xp;
+    // Calculate the remaining XP after leveling up
+    const newCurrentXP = newXP - (accumulatedMaxXP - maxXP);
+
+    console.log(`New Level: ${newLevel}`);
+    console.log(`New Current XP: ${newCurrentXP}`);
+    console.log(`New Max XP for this level: ${maxXP}`);
+
+    // Update the actor's level, max XP, current XP, and award points
+    await actor.update({
+      'system.xp.max': maxXP,
+      'system.xp.value': newCurrentXP,
+      'system.attributes.level.value': newLevel,
+      'system.openHpPoints': (actor.system.openHpPoints || 0) + levelPoints,  // Add HP points for each level gained
+      'system.openAttributePoints': (actor.system.openAttributePoints || 0) + levelPoints // Add Attribute points for each level gained
+    });
+
+    console.log(`Actor updated: Level ${newLevel}, Max XP ${maxXP}, Current XP ${newCurrentXP}`);
+    ui.notifications.info(`Added ${xpAmount} XP to ${actor.name}. New Level: ${newLevel}, Max XP: ${maxXP}, Current XP: ${newCurrentXP}`);
+  } else {
+    // Simply update the actor's XP if no level-up occurred
+    await actor.update({
+      'system.xp.value': newXP
+    });
+    console.log(`XP updated to ${newXP}, no level-up occurred.`);
+    ui.notifications.info(`Added ${xpAmount} XP to ${actor.name}. Current XP: ${newXP}`);
   }
+}
 
-  // Calculate the remaining XP after leveling up
-  const newCurrentXP = newXP - (accumulatedMaxXP - maxXP);
+//<--------------------------ALOCATE OPEN POINTS TODO: Merge if works------------------------------------>
 
-  // Update the actor's level, max XP, and current XP
-  await actor.update({
-    'system.xp.max': maxXP,
-    'system.xp.value': newCurrentXP,
-    'system.attributes.level.value': newLevel,
-    'system.openHpPoints': (actor.system.openHpPoints || 0) + levelPoints,  // Add HP points for each level gained
-    'system.openAttributePoints': (actor.system.openAttributePoints || 0) + levelPoints // Add Attribute points for each level gained
+Hooks.on('renderActorSheet', (app, html, data) => {
+  // Click handler for Add Attribute Point button
+  html.find('.add-attribute-point-button').click(() => {
+    if (app.actor.system.openAttributePoints > 0) {
+      new Dialog({
+        title: "Spend Attribute Point",
+        content: `
+          <form>
+            <div class="form-group">
+              <label for="attribute">Select Attribute to Increase:</label>
+              <select id="attribute" name="attribute">
+                <option value="strength">Strength</option>
+                <option value="dexterity">Dexterity</option>
+                <option value="intelligence">Intelligence</option>
+                <!-- Add more attributes as needed -->
+              </select>
+            </div>
+          </form>
+        `,
+        buttons: {
+          confirm: {
+            icon: '<i class="fas fa-check"></i>',
+            label: "Confirm",
+            callback: async (html) => {
+              const attribute = html.find('[name="attribute"]').val();
+              await app.actor.update({
+                [`system.attributes.${attribute}.value`]: app.actor.system.attributes[attribute].value + 1,
+                'system.openAttributePoints': app.actor.system.openAttributePoints - 1
+              });
+              ui.notifications.info(`${attribute} increased by 1.`);
+            }
+          },
+          cancel: {
+            icon: '<i class="fas fa-times"></i>',
+            label: "Cancel"
+          }
+        },
+        default: "confirm"
+      }).render(true);
+    }
   });
 
-  ui.notifications.info(`Added ${xpAmount} XP to ${actor.name}. New Level: ${newLevel}, Max XP: ${maxXP}, Current XP: ${newCurrentXP}`);
-}
+  // Click handler for Add HP Point button
+  html.find('.add-hp-point-button').click(() => {
+    if (app.actor.system.openHpPoints > 0) {
+      new Dialog({
+        title: "Spend HP Point",
+        content: `
+          <p>Would you like to increase your HP by 1?</p>
+        `,
+        buttons: {
+          confirm: {
+            icon: '<i class="fas fa-check"></i>',
+            label: "Confirm",
+            callback: async () => {
+              await app.actor.update({
+                'system.health.max': app.actor.system.health.max + 1,
+                'system.openHpPoints': app.actor.system.openHpPoints - 1
+              });
+              ui.notifications.info(`HP increased by 1.`);
+            }
+          },
+          cancel: {
+            icon: '<i class="fas fa-times"></i>',
+            label: "Cancel"
+          }
+        },
+        default: "confirm"
+      }).render(true);
+    }
+  });
+});
 /*Hooks.on('renderActorSheet', (app, html, data) => {
   // Attach click handler to the Add XP button
   html.find('.add-xp-button').click(() => {
