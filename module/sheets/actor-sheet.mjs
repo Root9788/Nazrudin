@@ -82,6 +82,9 @@ export class BoilerplateActorSheet extends ActorSheet {
       // as well as any items
       this.actor.allApplicableEffects()
     );
+    
+    // Add weapons to context
+    context.weapons = game.items.filter(i => i.type === 'weapon');
 
     return context;
   }
@@ -193,6 +196,33 @@ export class BoilerplateActorSheet extends ActorSheet {
         li.addEventListener('dragstart', handler, false);
       });
     }
+    // Handle Save Weapon Button Click
+    html.on('click', '#save-weapon-button', this._onSaveWeapon.bind(this));
+  }
+
+  /**
+   * Handle saving the selected weapon
+   * @param {Event} event - The originating click event
+   * @private
+   */
+  async _onSaveWeapon(event) {
+    event.preventDefault();
+
+    // Retrieve the selected weapon ID from the dropdown
+    const selectedWeaponId = this.element.find('#weapon-select').val();
+    
+    if (!selectedWeaponId) {
+      ui.notifications.warn('No weapon selected.');
+      return;
+    }
+
+    
+    // Update the actor's data with the selected weapon ID
+    await this.actor.update({ 'system.selectedWeapon': selectedWeaponId });
+
+    console.log(this.actor)
+
+    ui.notifications.info('Weapon saved successfully.');
   }
 
   /**
@@ -206,7 +236,7 @@ export class BoilerplateActorSheet extends ActorSheet {
     // Get the type of item to create.
     const type = header.dataset.type;
     // Grab any data associated with this control.
-    const data = duplicate(header.dataset);
+    const data = foundry.utils.duplicate(header.dataset);
     // Initialize a default name.
     const name = `New ${type.capitalize()}`;
     // Prepare the item object.

@@ -49,7 +49,8 @@ Hooks.once('init', function () {
   CONFIG.Item.dataModels = {
     item: models.BoilerplateItem,
     feature: models.BoilerplateFeature,
-    spell: models.BoilerplateSpell
+    spell: models.BoilerplateSpell,
+    weapon: models.BoilerplateWeapon
   }
 
   // Active Effects are never copied to the Actor,
@@ -59,12 +60,12 @@ Hooks.once('init', function () {
 
   // Register sheet application classes
   Actors.unregisterSheet('core', ActorSheet);
-  Actors.registerSheet('boilerplate', BoilerplateActorSheet, {
+  Actors.registerSheet('nazrudin', BoilerplateActorSheet, {
     makeDefault: true,
     label: 'BOILERPLATE.SheetLabels.Actor',
   });
   Items.unregisterSheet('core', ItemSheet);
-  Items.registerSheet('boilerplate', BoilerplateItemSheet, {
+  Items.registerSheet('nazrudin', BoilerplateItemSheet, {
     makeDefault: true,
     label: 'BOILERPLATE.SheetLabels.Item',
   });
@@ -80,6 +81,19 @@ Hooks.once('init', function () {
 // If you need to add Handlebars helpers, here is a useful example:
 Handlebars.registerHelper('toLowerCase', function (str) {
   return str.toLowerCase();
+});
+
+Handlebars.registerHelper('debug', function(value) {
+  console.log('Debug:', value);
+  return ''; // Return an empty string to avoid rendering unwanted content
+});
+
+Handlebars.registerHelper('setVar', function (varName, varValue, options) {
+  if (!options.data.root[varName]) {
+    options.data.root[varName] = varValue;
+  } else {
+    options.data.root[varName] = varValue;
+  }
 });
 
 /* -------------------------------------------- */
@@ -114,7 +128,7 @@ async function createItemMacro(data, slot) {
   const item = await Item.fromDropData(data);
 
   // Create the macro command using the uuid.
-  const command = `game.boilerplate.rollItemMacro("${data.uuid}");`;
+  const command = `game.nazrudin.rollItemMacro("${data.uuid}");`;
   let macro = game.macros.find(
     (m) => m.name === item.name && m.command === command
   );
@@ -124,7 +138,7 @@ async function createItemMacro(data, slot) {
       type: 'script',
       img: item.img,
       command: command,
-      flags: { 'boilerplate.itemMacro': true },
+      flags: { 'nazrudin.itemMacro': true },
     });
   }
   game.user.assignHotbarMacro(macro, slot);
@@ -156,3 +170,38 @@ function rollItemMacro(itemUuid) {
     item.roll();
   });
 }
+
+Hooks.on('renderItemSheet', (app, html, data) => {
+  console.log("updated");
+  // Add click handler for save button
+  html.find('.save-button').click(async (event) => {
+    event.preventDefault();
+    
+    
+    // Gather form data
+    const formData = new FormData(html.find('form')[0]);
+    const data = Object.fromEntries(formData);
+
+    // Extract individual values
+    const diceNum = data['system.roll.diceNum'];
+    const diceSize = data['system.roll.diceSize'];
+    const diceBonus = data['system.roll.diceBonus'];
+
+    // Construct the new formula
+    const newFormula = `${diceNum}${diceSize}${diceBonus}`;
+
+    // Update the item with the new values
+    await app.object.update({
+      'name': data['name'],
+      'system.quantity': data['system.quantity'],
+      'system.weight': data['system.weight'],
+      'system.roll.diceNum': diceNum,
+      'system.roll.diceSize': diceSize,
+      'system.roll.diceBonus': diceBonus,
+      'system.formula': newFormula
+    });
+
+    // Optionally, close the dialog after saving
+    app.close();
+  });
+});

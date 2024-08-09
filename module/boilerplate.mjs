@@ -67,6 +67,33 @@ Handlebars.registerHelper('toLowerCase', function (str) {
   return str.toLowerCase();
 });
 
+Handlebars.registerHelper('debug', function(value) {
+  console.log('Debug:', value);
+  return ''; // Return an empty string to avoid rendering unwanted content
+});
+
+Handlebars.registerHelper('setVar', function (varName, varValue, options) {
+  if (!options.data.root[varName]) {
+    options.data.root[varName] = varValue;
+  } else {
+    options.data.root[varName] = varValue;
+  }
+});
+
+Handlebars.registerHelper('setById', function (varName, source, idValue, options) { 
+  for (let i = 0; i < source.length; i++) {
+    if(source[i]._id == idValue)
+      options.data.root[varName] = source[i];
+  }
+});
+
+Handlebars.registerHelper('getById', function (source, idValue) { 
+  for (let i = 0; i < source.length; i++) {
+    if(source[i]._id == idValue)
+      return source[i];
+  }
+});
+
 /* -------------------------------------------- */
 /*  Ready Hook                                  */
 /* -------------------------------------------- */
@@ -207,9 +234,9 @@ Hooks.on('updateActor', async (actor, updateData, options, userId) => {
 });
 
 
-/* -------------------------------------------- */
-/*  Update Hook for Render                      */
-/* -------------------------------------------- */
+  /* -------------------------------------------- */
+  /*  Update Hook for Render                      */
+  /* -------------------------------------------- */
 
 Hooks.on('renderActorSheet', (app, html, data) => {
   // Attach click handler to the Add XP button
@@ -379,111 +406,197 @@ async function addXPToActor(actor, xpAmount) {
 
 //<--------------------------ALOCATE OPEN POINTS TODO: Merge if works------------------------------------>
 
-Hooks.on('renderActorSheet', (app, html, data) => {
-  // Click handler for Add Attribute Point button
-  html.find('.add-attribute-point-button').click(() => {
-    if (app.actor.system.openAttributePoints > 0) {
-      new Dialog({
-        title: "Spend Attribute Point",
-        content: `
-          <form>
-            <div class="form-group">
-              <label for="attribute">Select Attribute to Increase:</label>
-              <select id="attribute" name="attribute">
-                <option value="ges">Geschicklichkeit</option>
-                <option value="agi">Agilität</option>
-                <option value="gen">Genauigkeit</option>
-                <option value="kon">Konzentration</option>
-                <option value="kkf">Körperkraft</option>
-                <option value="tal">Talent</option>
-              </select>
-            </div>
-          </form>
-        `,
-        buttons: {
-          confirm: {
-            icon: '<i class="fas fa-check"></i>',
-            label: "Confirm",
-            callback: async (html) => {
-              const attribute = html.find('[name="attribute"]').val();
-              await app.actor.update({
-                [`system.abilities.${attribute}.value`]: app.actor.system.abilities[attribute].value + 1,
-                'system.openAttributePoints': app.actor.system.openAttributePoints - 1
-              });
-              ui.notifications.info(`${attribute} increased by 1.`);
-            }
-          },
-          cancel: {
-            icon: '<i class="fas fa-times"></i>',
-            label: "Cancel"
-          }
-        },
-        default: "confirm"
-      }).render(true);
-    }
-  });
-
-  // Click handler for Add HP Point button
-  html.find('.add-hp-point-button').click(() => {
-    if (app.actor.system.openHpPoints > 0) {
-      new Dialog({
-        title: "Spend HP Point",
-        content: `
-          <form>
-            <div class="form-group">
-              <label for="hp-choice">Choose what to increase:</label>
-              <select id="hp-choice" name="hp-choice">
-                <option value="health">HP</option>
-                <option value="evasion">Ausweichen</option>
-                <option value="counter">Konter</option>
-              </select>
-            </div>
-          </form>
-        `,
-        buttons: {
-          confirm: {
-            icon: '<i class="fas fa-check"></i>',
-            label: "Confirm",
-            callback: async (html) => {
-              const choice = html.find('[name="hp-choice"]').val();
-              let updateData = {};
-              let notificationMessage = '';
-
-              switch (choice) {
-                case 'health':
-                  updateData = {
-                    'system.health.max': app.actor.system.health.max + 20,
-                    'system.openHpPoints': app.actor.system.openHpPoints - 1
-                  };
-                  notificationMessage = 'HP increased by 20.';
-                  break;
-                case 'evasion':
-                  updateData = {
-                    'system.evasion.value': app.actor.system.evasion.value + 1,
-                    'system.openHpPoints': app.actor.system.openHpPoints - 1
-                  };
-                  notificationMessage = 'Evasion increased by 1.';
-                  break;
-                case 'counter':
-                  updateData = {
-                    'system.counter.value': app.actor.system.counter.value + 1,
-                    'system.openHpPoints': app.actor.system.openHpPoints - 1
-                  };
-                  notificationMessage = 'Counter increased by 1.';
-                  break;
+  Hooks.on('renderActorSheet', (app, html, data) => {
+    // Click handler for Add Attribute Point button
+    html.find('.add-attribute-point-button').click(() => {
+      if (app.actor.system.openAttributePoints > 0) {
+        new Dialog({
+          title: "Spend Attribute Point",
+          content: `
+            <form>
+              <div class="form-group">
+                <label for="attribute">Select Attribute to Increase:</label>
+                <select id="attribute" name="attribute">
+                  <option value="ges">Geschicklichkeit</option>
+                  <option value="agi">Agilität</option>
+                  <option value="gen">Genauigkeit</option>
+                  <option value="kon">Konzentration</option>
+                  <option value="kkf">Körperkraft</option>
+                  <option value="tal">Talent</option>
+                </select>
+              </div>
+            </form>
+          `,
+          buttons: {
+            confirm: {
+              icon: '<i class="fas fa-check"></i>',
+              label: "Confirm",
+              callback: async (html) => {
+                const attribute = html.find('[name="attribute"]').val();
+                await app.actor.update({
+                  [`system.abilities.${attribute}.value`]: app.actor.system.abilities[attribute].value + 1,
+                  'system.openAttributePoints': app.actor.system.openAttributePoints - 1
+                });
+                ui.notifications.info(`${attribute} increased by 1.`);
               }
-
-              await app.actor.update(updateData);
-              ui.notifications.info(notificationMessage);
+            },
+            cancel: {
+              icon: '<i class="fas fa-times"></i>',
+              label: "Cancel"
             }
           },
-          cancel: {
-            icon: '<i class="fas fa-times"></i>',
-            label: "Cancel"
-          }
-        },
-        default: "confirm"
-      }).render(true);
+          default: "confirm"
+        }).render(true);
+      }
+    });
+
+    // Click handler for Add HP Point button
+    html.find('.add-hp-point-button').click(() => {
+      if (app.actor.system.openHpPoints > 0) {
+        new Dialog({
+          title: "Spend HP Point",
+          content: `
+            <form>
+              <div class="form-group">
+                <label for="hp-choice">Choose what to increase:</label>
+                <select id="hp-choice" name="hp-choice">
+                  <option value="health">HP</option>
+                  <option value="evasion">Ausweichen</option>
+                  <option value="conter">Konter</option>
+                </select>
+              </div>
+            </form>
+          `,
+          buttons: {
+            confirm: {
+              icon: '<i class="fas fa-check"></i>',
+              label: "Confirm",
+              callback: async (html) => {
+                const choice = html.find('[name="hp-choice"]').val();
+                let updateData = {};
+                let notificationMessage = '';
+
+                switch (choice) {
+                  case 'health':
+                    updateData = {
+                      'system.health.max': app.actor.system.health.max + 20,
+                      'system.openHpPoints': app.actor.system.openHpPoints - 1
+                    };
+                    notificationMessage = 'HP increased by 20.';
+                    break;
+                  case 'evasion':
+                    updateData = {
+                      'system.evasion.value': app.actor.system.evasion.value + 1,
+                      'system.openHpPoints': app.actor.system.openHpPoints - 1
+                    };
+                    notificationMessage = 'Evasion increased by 1.';
+                    break;
+                  case 'conter':
+                    updateData = {
+                      'system.conter.value': app.actor.system.conter.value + 1,
+                      'system.openHpPoints': app.actor.system.openHpPoints - 1
+                    };
+                    notificationMessage = 'conter increased by 1.';
+                    break;
+                }
+
+                await app.actor.update(updateData);
+                ui.notifications.info(notificationMessage);
+              }
+            },
+            cancel: {
+              icon: '<i class="fas fa-times"></i>',
+              label: "Cancel"
+            }
+          },
+          default: "confirm"
+        }).render(true);
+      }
+  }); 
+});
+
+
+Hooks.on('renderItemSheet', (app, html, data) => {
+  console.log(data);
+  
+  // Add click handler for save button
+  html.find('.save-button').click(async (event) => {
+    event.preventDefault();
+    
+    // Gather form data
+    const formData = new FormData(html.find('form')[0]);
+    const formDataObj = Object.fromEntries(formData);
+    
+    // Extract individual values
+    const diceNum = formDataObj['system.roll.diceNum'];
+    const diceSize = formDataObj['system.roll.diceSize'];
+    const diceBonus = formDataObj['system.roll.diceBonus'];
+    const diceBonusStat = formDataObj['system.hitChance']; //<--- this is the stat shortcut
+
+    let abilityMod = 0;
+
+    // Check if diceBonusStat is defined and valid
+    if (diceBonusStat) {
+      const actor = app.actor; // The actor associated with the item
+      if (actor && actor.system.abilities[diceBonusStat]) {
+        abilityMod = actor.system.abilities[diceBonusStat].mod;
+      }
     }
+
+    // Construct the new formula
+    const newFormula = `${diceNum}d${diceSize}+${diceBonus}+${abilityMod}`;
+
+    console.log("New Formula:");
+    console.log(newFormula);
+    
+    // Update the item with the new values
+    await app.object.update({
+      'name': formDataObj['name'],
+      'system.quantity': formDataObj['system.quantity'],
+      'system.weight': formDataObj['system.weight'],
+      'system.roll.diceNum': diceNum,
+      'system.roll.diceSize': diceSize,
+      'system.roll.diceBonus': diceBonus,
+      'system.formula': newFormula
+    });
+
+    // Optionally, close the dialog after saving
+    app.close();
+  });
 });
-});
+/*Hooks.on('renderItemSheet', (app, html, data) => {
+  console.log(data);
+  // Add click handler for save button
+  html.find('.save-button').click(async (event) => {
+    event.preventDefault();
+    // Gather form data
+    const formData = new FormData(html.find('form')[0]);
+    const data = Object.fromEntries(formData);
+
+    // Extract individual values
+    const diceNum = data['system.roll.diceNum'];
+    const diceSize = data['system.roll.diceSize'];
+    const diceBonus = data['system.roll.diceBonus'];
+    const diceBonusStat = data['system.hitChance']; //<--- in here is the stat shortcut
+
+    // Construct the new formula
+    const newFormula = `${diceNum}d${diceSize}+${diceBonus}+@${diceBonusStat}`;
+
+    console.log("new Formulat");
+    console.log(newFormula);
+    // Update the item with the new values
+    await app.object.update({
+      'name': data['name'],
+      'system.quantity': data['system.quantity'],
+      'system.weight': data['system.weight'],
+      'system.roll.diceNum': diceNum,
+      'system.roll.diceSize': diceSize,
+      'system.roll.diceBonus': diceBonus,
+      'system.formula': newFormula
+    });
+
+    // Optionally, close the dialog after saving
+    app.close();
+  });
+});*/
+

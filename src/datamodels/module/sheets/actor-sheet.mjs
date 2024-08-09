@@ -82,6 +82,8 @@ export class BoilerplateActorSheet extends ActorSheet {
       // as well as any items
       this.actor.allApplicableEffects()
     );
+    // Add weapons to context
+    context.weapons = game.items.filter(i => i.type === 'weapon');
 
     return context;
   }
@@ -193,6 +195,16 @@ export class BoilerplateActorSheet extends ActorSheet {
         li.addEventListener('dragstart', handler, false);
       });
     }
+    // Handle weapon selection change
+    html.find('#weapon-select').change(async (event) => {
+      const selectedWeaponId = event.target.value;
+      await this._onWeaponChange(selectedWeaponId);
+    });
+  }
+
+  async _onWeaponChange(weaponId) {
+    await this.actor.update({ 'system.selectedWeapon': weaponId });
+    this.render(); // Re-render the sheet to update the weapon details
   }
 
   /**

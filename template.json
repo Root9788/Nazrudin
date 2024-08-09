@@ -40,6 +40,9 @@
         "openAttributePoints":{
           "value": 0
         },
+        "selectedWeapon":{
+
+        },
         "biography": ""
       }
     },
@@ -77,7 +80,7 @@
     }
   },
   "Item": {
-    "types": ["item", "feature", "spell"],
+    "types": ["item", "feature", "spell", "weapon"],
     "templates": {
       "base": {
         "description": ""
@@ -98,6 +101,15 @@
     "spell": {
       "templates": ["base"],
       "spellLevel": 1
+    },
+    "weapon": {
+      "templates": ["base"],
+      "weight": 0,
+      "damage": 0,
+      "hitchance": "d20",
+      "critRate": 20,
+      "critDamageMulti": 1.5,
+      "range": 0
     }
   }
 }

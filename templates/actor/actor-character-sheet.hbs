@@ -18,14 +18,14 @@
         </div>
         <!-- Vital Points -->
         <div class="vital-points flex-group-center">
-          <label for="evasion">Ausweichen:</label>
+          <label for="evasion" class="rollable" data-roll="1d20 + {{system.evasion.value}}" data-label="Ausweichen">Ausweichen:</label>
           <input type="number" name="open-hp-points" value="{{system.evasion.value}}" data-dtype="Number" readonly class="centered-input"/> 
         </div>
         <div class="vital-points flex-group-center">
-          <label for="conter">Konter:</label>
+          <label for="conter" class="rollable" data-roll="1d20 + {{system.conter.value}}" data-label="Konter">Konter:</label>
           <input type="number" name="open-attribute-points" value="{{system.conter.value}}" data-dtype="Number" readonly class="centered-input"/>  
         </div>
-      </div>
+
       
       <!-- Shield Section -->
       <div class="resources grid grid-3col">
@@ -160,7 +160,7 @@
 
     {{!-- Owned Equipment Tab --}}
     <div class="tab equipment" data-group="primary" data-tab="equipment">
-       {{> "systems/nazrudin/templates/actor/parts/actor-items.hbs"}}
+      {{> "systems/nazrudin/templates/actor/parts/actor-weapons.hbs"}}
     </div>
 
     {{!-- Owned Items Tab --}}

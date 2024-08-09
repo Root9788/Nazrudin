@@ -34,9 +34,10 @@
     </div>
 
     <div class='tab attributes' data-group='primary' data-tab='attributes'>
+      <!-- Hit Formula Section -->
       <div class='resource'>
-        <label class='resource-label'>Roll Formula:</label>
-        <span>{{system.formula}}</span>
+        <label class='resource-label'>Hit Formula:</label>
+        <span>{{system.hitFormula}}</span>
         <div class='grid grid-4col'>
           <div class='grid-span-1'>
             <label class='resource-label'>Number of Dice</label>
@@ -51,7 +52,42 @@
             <input type='text' name='system.roll.diceBonus' value='{{system.roll.diceBonus}}' data-dtype='String'/>
           </div>
         </div>
+        <div class='grid grid-2col'>
+          <div class='resource'>
+        <label class='resource-label'>Hit Chance Ability:</label>
+        <select
+          name='system.hitChance'
+          data-dtype='String'
+        >
+          <option value="ges" {{#if (eq system.hitChance "ges")}}selected{{/if}}>Geschicklichkeit</option>
+          <option value="agi" {{#if (eq system.hitChance "agi")}}selected{{/if}}>Agilität</option>
+          <option value="gen" {{#if (eq system.hitChance "gen")}}selected{{/if}}>Genauigkeit</option>
+          <option value="kon" {{#if (eq system.hitChance "kon")}}selected{{/if}}>Konzentration</option>
+          <option value="kkf" {{#if (eq system.hitChance "kkf")}}selected{{/if}}>Körperkraft</option>
+          <option value="tal" {{#if (eq system.hitChance "tal")}}selected{{/if}}>Talent</option>
+        </select>
       </div>
+        </div>
+      </div>
+      
+      <!-- Damage, Counter, Evasion, Crit Rate Section -->
+      <div class='resource'>
+        <label class='resource-label'>Damage:</label>
+        <input type='text' name='system.damage' value='{{system.damage}}' data-dtype='String'/>
+      </div>
+      <div class='resource'>
+        <label class='resource-label rollable' data-target='system.evasion'>Evasion:</label>
+        <input type='number' name='system.evasion' value='{{system.evasion}}' data-dtype='Number'/>
+      </div>
+      <div class='resource'>
+        <label class='resource-label rollable' data-target='system.counter'>Counter:</label>
+        <input type='number' name='system.counter' value='{{system.counter}}' data-dtype='Number'/>
+      </div>
+      <div class='resource'>
+        <label class='resource-label'>Critical Rate:</label>
+        <input type='number' name='system.critRate' value='{{system.critRate}}' data-dtype='Number'/>
+      </div>
+
       <!-- Moved Save button here -->
       <footer class='sheet-footer'>
         <button type='button' class='save-button'>Save</button>
