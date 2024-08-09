@@ -26,7 +26,7 @@ export class BoilerplateItemSheet extends ItemSheet {
 
   /** @override */
   get template() {
-    const path = 'systems/boilerplate/templates/item';
+    const path = 'systems/nazrudin/templates/item';
     // Return a single sheet for all item types.
     // return `${path}/item-sheet.hbs`;
 

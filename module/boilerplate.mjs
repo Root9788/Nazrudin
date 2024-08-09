@@ -382,10 +382,12 @@ Hooks.on('renderActorSheet', (app, html, data) => {
             <div class="form-group">
               <label for="attribute">Select Attribute to Increase:</label>
               <select id="attribute" name="attribute">
-                <option value="strength">Strength</option>
-                <option value="dexterity">Dexterity</option>
-                <option value="intelligence">Intelligence</option>
-                <!-- Add more attributes as needed -->
+                <option value="ges">Geschicklichkeit</option>
+                <option value="agi">Agilität</option>
+                <option value="gen">Genauigkeit</option>
+                <option value="kon">Konzentration</option>
+                <option value="kkf">Körperkraft</option>
+                <option value="tal">Talent</option>
               </select>
             </div>
           </form>
@@ -397,7 +399,7 @@ Hooks.on('renderActorSheet', (app, html, data) => {
             callback: async (html) => {
               const attribute = html.find('[name="attribute"]').val();
               await app.actor.update({
-                [`system.attributes.${attribute}.value`]: app.actor.system.attributes[attribute].value + 1,
+                [`system.abilities.${attribute}.value`]: app.actor.system.abilities[attribute].value + 1,
                 'system.openAttributePoints': app.actor.system.openAttributePoints - 1
               });
               ui.notifications.info(`${attribute} increased by 1.`);
@@ -419,18 +421,52 @@ Hooks.on('renderActorSheet', (app, html, data) => {
       new Dialog({
         title: "Spend HP Point",
         content: `
-          <p>Would you like to increase your HP by 1?</p>
+          <form>
+            <div class="form-group">
+              <label for="hp-choice">Choose what to increase:</label>
+              <select id="hp-choice" name="hp-choice">
+                <option value="health">HP</option>
+                <option value="evasion">Ausweichen</option>
+                <option value="counter">Konter</option>
+              </select>
+            </div>
+          </form>
         `,
         buttons: {
           confirm: {
             icon: '<i class="fas fa-check"></i>',
             label: "Confirm",
-            callback: async () => {
-              await app.actor.update({
-                'system.health.max': app.actor.system.health.max + 1,
-                'system.openHpPoints': app.actor.system.openHpPoints - 1
-              });
-              ui.notifications.info(`HP increased by 1.`);
+            callback: async (html) => {
+              const choice = html.find('[name="hp-choice"]').val();
+              let updateData = {};
+              let notificationMessage = '';
+
+              switch (choice) {
+                case 'health':
+                  updateData = {
+                    'system.health.max': app.actor.system.health.max + 20,
+                    'system.openHpPoints': app.actor.system.openHpPoints - 1
+                  };
+                  notificationMessage = 'HP increased by 20.';
+                  break;
+                case 'evasion':
+                  updateData = {
+                    'system.evasion.value': app.actor.system.evasion.value + 1,
+                    'system.openHpPoints': app.actor.system.openHpPoints - 1
+                  };
+                  notificationMessage = 'Evasion increased by 1.';
+                  break;
+                case 'counter':
+                  updateData = {
+                    'system.counter.value': app.actor.system.counter.value + 1,
+                    'system.openHpPoints': app.actor.system.openHpPoints - 1
+                  };
+                  notificationMessage = 'Counter increased by 1.';
+                  break;
+              }
+
+              await app.actor.update(updateData);
+              ui.notifications.info(notificationMessage);
             }
           },
           cancel: {
@@ -441,7 +477,7 @@ Hooks.on('renderActorSheet', (app, html, data) => {
         default: "confirm"
       }).render(true);
     }
-  });
+});
 });
 /*Hooks.on('renderActorSheet', (app, html, data) => {
   // Attach click handler to the Add XP button

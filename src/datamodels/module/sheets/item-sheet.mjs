@@ -11,7 +11,7 @@ export class BoilerplateItemSheet extends ItemSheet {
   /** @override */
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
-      classes: ['boilerplate', 'sheet', 'item'],
+      classes: ['nazrudin', 'sheet', 'item'],
       width: 520,
       height: 480,
       tabs: [
@@ -26,7 +26,7 @@ export class BoilerplateItemSheet extends ItemSheet {
 
   /** @override */
   get template() {
-    const path = 'systems/boilerplate/templates/item';
+    const path = 'systems/nazrudin/templates/item';
     // Return a single sheet for all item types.
     // return `${path}/item-sheet.hbs`;
 

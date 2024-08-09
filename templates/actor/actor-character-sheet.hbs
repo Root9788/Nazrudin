@@ -138,6 +138,20 @@
               </div>
             </div>
           </div>
+          <!-- Vital Points -->
+          <div class="resource2 flex-group-center">
+            <label class="resource-label">Vital Verteidigungswerte</label>
+            <div class="resource2-content flexrow flex-center flex-between">
+              <div>
+                <label for="open-hp-points">Ausweichen:</label>
+                <input type="number" name="open-hp-points" value="{{system.openHpPoints}}" data-dtype="Number" readonly/> 
+              </div>
+              <div>
+                <label for="open-attribute-points">Konter:</label>
+                <input type="number" name="open-attribute-points" value="{{system.openAttributePoints}}" data-dtype="Number" readonly/>  
+              </div>
+            </div>
+          </div>
         </section>
       </section>
     </div>
@@ -150,17 +164,17 @@
 
     {{!-- Owned Items Tab --}}
     <div class="tab items" data-group="primary" data-tab="items">
-       {{> "systems/boilerplate/templates/actor/parts/actor-items.hbs"}}
+       {{> "systems/nazrudin/templates/actor/parts/actor-items.hbs"}}
     </div>
 
     {{!-- Owned Spells Tab --}}
     <div class="tab spells" data-group="primary" data-tab="spells">
-      {{> "systems/boilerplate/templates/actor/parts/actor-spells.hbs"}}
+      {{> "systems/nazrudin/templates/actor/parts/actor-spells.hbs"}}
     </div>
 
     {{!-- Active Effects Tab --}}
     <div class="tab effects flexcol" data-group="primary" data-tab="effects">
-      {{> "systems/boilerplate/templates/actor/parts/actor-effects.hbs"}}
+      {{> "systems/nazrudin/templates/actor/parts/actor-effects.hbs"}}
     </div>
 
   </section>

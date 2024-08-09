@@ -8,6 +8,16 @@
           "min": 0,
           "max": 80
         },
+        "evasion": {
+          "value": 7,
+          "min": 0,
+          "max": 12
+        },
+        "conter": {
+          "value": 7,
+          "min": 0,
+          "max": 12
+        },
         "shield": {
           "value": 0,
           "min": 0,
