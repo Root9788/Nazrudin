@@ -31,6 +31,9 @@
         "spiritXp": {
           "value": 0
         },
+        "trainingsXP": {
+          "value": 0
+        },
         "openHpPoints":{
           "value": 0
         },
@@ -84,7 +87,10 @@
       "templates": ["base"],
       "quantity": 1,
       "weight": 0,
-      "formula": "d20 + @str.mod + ceil(@lvl / 2)"
+      "formula": "d20 + @str.mod + ceil(@lvl / 2)",
+      "diceNum": 0,
+      "diceSize": 0,
+      "diceBonus":0
     },
     "feature": {
       "templates": ["base"]

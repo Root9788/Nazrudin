@@ -282,6 +282,12 @@ const DEFAULTS = {
     value: 0,
     max: 0
   },
+  evasion: {
+    value: 7
+  },
+  conter: {
+    value: 7
+  },
   openHpPoints: 0,
   openAttributePoints: 0,
   // Add any other default values as needed
@@ -294,6 +300,8 @@ async function resetCharacter(actor) {
     'system.xp.max': DEFAULTS.xp.max,
     'system.attributes.level.value': DEFAULTS.level,
     'system.health.value': DEFAULTS.health.value,
+    'system.evasion.value': DEFAULTS.evasion.value,
+    'system.conter.value': DEFAULTS.conter.value,
     'system.health.max': DEFAULTS.health.max,
     'system.shield.value': DEFAULTS.shield.value,
     'system.shield.max': DEFAULTS.shield.max,
@@ -479,74 +487,3 @@ Hooks.on('renderActorSheet', (app, html, data) => {
     }
 });
 });
-/*Hooks.on('renderActorSheet', (app, html, data) => {
-  // Attach click handler to the Add XP button
-  html.find('.add-xp-button').click(() => {
-    // Open a dialog to input the XP amount
-    new Dialog({
-      title: "Add XP",
-      content: `
-        <form>
-          <div class="form-group">
-            <label for="xp-amount">XP Amount:</label>
-            <input type="number" id="xp-amount" name="xp-amount" value="0"/>
-          </div>
-        </form>
-      `,
-      buttons: {
-        confirm: {
-          icon: '<i class="fas fa-check"></i>',
-          label: "Add XP",
-          callback: (html) => {
-            const xpAmount = parseInt(html.find('[name="xp-amount"]').val());
-            if (xpAmount > 0) {
-              addXPToActor(app.actor, xpAmount);
-            }
-          }
-        },
-        cancel: {
-          icon: '<i class="fas fa-times"></i>',
-          label: "Cancel"
-        }
-      },
-      default: "confirm"
-    }).render(true);
-  });
-});
-
-async function addXPToActor(actor, xpAmount) {
-  const currentXP = actor.system.xp.value;
-  let maxXP = actor.system.xp.max;
-  const currentLevel = actor.system.attributes.level.value;
-
-  // Calculate new XP value
-  let newXP = currentXP + xpAmount;
-
-  // Determine new level and max XP based on level thresholds
-  let newLevel = currentLevel;
-  let accumulatedMaxXP = maxXP;
-  while (newXP >= accumulatedMaxXP) {
-    newLevel++;
-    const nextThreshold = BOILERPLATE.levelThresholds.find(threshold => threshold.level === newLevel);
-
-    if (!nextThreshold) {
-      console.log("No more levels to increase.");
-      break;
-    }
-
-    accumulatedMaxXP += nextThreshold.xp;
-    maxXP = nextThreshold.xp;
-  }
-
-  // Calculate the remaining XP after leveling up
-  let newCurrentXP = newXP - (accumulatedMaxXP - maxXP);
-
-  // Update the actor's level, max XP, and current XP
-  await actor.update({
-    'system.xp.max': maxXP,
-    'system.xp.value': newCurrentXP,
-    'system.attributes.level.value': newLevel
-  });
-
-  ui.notifications.info(`Added ${xpAmount} XP to ${actor.name}. New Level: ${newLevel}, Max XP: ${maxXP}, Current XP: ${newCurrentXP}`);
-}*/
