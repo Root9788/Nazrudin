@@ -125,6 +125,27 @@
           {{!-- This is a Handlebars partial. They're stored in the `/parts` folder next to this sheet, and defined in module/helpers/templates.mjs --}}
           {{!-- {{> "systems/boilerplate/templates/actor/parts/actor-features.hbs"}} --}}
          {{!--</section>--}}
+
+        {{!-- Weapon Selection Dropdown --}}
+
+        {{debug "Actor debug start"}}
+        {{debug system}}
+        {{debug "Actor debug end"}}
+        <section class="weapon-selection">
+          <label for="weapon-select">Select Weapon to Equip:</label>
+          <select id="weapon-select" name="system.selectedWeaponSlot">
+            <!-- Default 'None' option -->
+            <option value="" {{#if (eq ../system.selectedWeaponSlot "")}}selected{{/if}}>None</option>
+            
+            <!-- Iterate through available weapons -->
+            {{#each weapons as |weapon|}}
+              <option value="{{weapon._id}}" {{#if (eq weapon._id ../system.selectedWeaponSlot)}}selected{{/if}}>
+                {{weapon.name}}
+              </option>
+            {{/each}}
+          </select>
+        </section>
+
         <style>
           .resource4 + .resource4 {
             padding-top: 20px; /* Adjust this value to control the amount of padding */

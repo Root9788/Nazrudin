@@ -36,7 +36,6 @@ export default class BoilerplateCharacter extends BoilerplateActorBase {
 
   getRollData() {
     const data = {};
-
     // Copy the ability scores to the top level, so that rolls can use
     // formulas like `@str.mod + 4`.
     if (this.abilities) {

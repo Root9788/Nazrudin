@@ -40,7 +40,22 @@
         "openAttributePoints":{
           "value": 0
         },
-        "selectedWeapon":{
+        "selectedWeaponSlot1":{
+
+        },
+        "selectedWeaponSlot2":{
+
+        },
+        "selectedWeaponSlot3":{
+
+        },
+        "selectedWeaponSlot4":{
+
+        },
+        "selectedWeaponSlot5":{
+
+        },
+        "equipedWeapon":{
 
         },
         "biography": ""

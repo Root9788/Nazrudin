@@ -29,7 +29,7 @@ Hooks.once('init', function () {
    * @type {String}
    */
   CONFIG.Combat.initiative = {
-    formula: '1d20 + @abilities.dex.mod',
+    formula: '1d20 + @abilities.ges.mod',
     decimals: 2,
   };
 
@@ -92,6 +92,24 @@ Handlebars.registerHelper('getById', function (source, idValue) {
     if(source[i]._id == idValue)
       return source[i];
   }
+});
+
+Handlebars.registerHelper('buildFormularForActor', function (varName, weapon, actor, options) { 
+  // Ensure that the necessary properties exist
+  if (!weapon || !actor) {
+    return 'Invalid weapon or actor';
+  }
+  console.log("weapon check")
+  console.log(weapon)
+  const abilityMod = weapon.system.hitChance;
+
+  options.data.root[varName] = `1d20+@abilities.${abilityMod}.mod`
+  //const diceNum = formDataObj['system.roll.diceNum'];
+  //const diceSize = formDataObj['system.roll.diceSize'];
+  //const diceBonus = formDataObj['system.roll.diceBonus'];
+  //const diceBonusStat = formDataObj['system.hitChance']; //<--- this is the stat shortcut
+  
+
 });
 
 /* -------------------------------------------- */
@@ -536,15 +554,17 @@ Hooks.on('renderItemSheet', (app, html, data) => {
     let abilityMod = 0;
 
     // Check if diceBonusStat is defined and valid
-    if (diceBonusStat) {
+    /*if (diceBonusStat) {
       const actor = app.actor; // The actor associated with the item
+      console.log("ACTOR");
+      console.log(diceBonusStat);
       if (actor && actor.system.abilities[diceBonusStat]) {
         abilityMod = actor.system.abilities[diceBonusStat].mod;
       }
-    }
+    }*/
 
     // Construct the new formula
-    const newFormula = `${diceNum}d${diceSize}+${diceBonus}+${abilityMod}`;
+    const newFormula = `${diceNum}d${diceSize}+${diceBonus}+@abilities.${diceBonusStat}.mod`;
 
     console.log("New Formula:");
     console.log(newFormula);
@@ -564,6 +584,79 @@ Hooks.on('renderItemSheet', (app, html, data) => {
     app.close();
   });
 });
+
+
+////-------------------------TEST-----------------------////
+
+// Function to handle equip/unequip and save weapon ID
+function handleEquipUnequip(selectedWeaponId) {
+  // Get the actor (this depends on your application setup)
+  const actor = game.actors.get("your-actor-id"); // Replace with actual actor ID or reference
+
+  // Update the actor's equippedWeapon field
+  if (selectedWeaponId === "") {
+    // Unequip the weapon
+    actor.update({ 'data.equippedWeapon': null });
+  } else {
+    // Equip the weapon
+    actor.update({ 'data.equippedWeapon': selectedWeaponId });
+  }
+}
+
+// Hook to run when a change in the selection occurs
+Hooks.on('updateActor', function (actor, update) {
+  if (update.data && update.data.equippedWeapon !== undefined) {
+    // Perform additional actions if needed when the equippedWeapon is updated
+    console.log(`Actor ${actor.name} equipped weapon ID: ${update.data.equippedWeapon}`);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const weaponSelect = document.getElementById('weapon-select');
+  const equipUnequipButton = document.getElementById('equip-unequip-button');
+
+  // Function to update button text based on weapon state
+  function updateButtonText() {
+    const selectedWeaponId = weaponSelect.value;
+
+    // Check if the selected weapon slot is empty or not
+    if (selectedWeaponId === "") {
+      equipUnequipButton.textContent = "Equip";
+    } else {
+      equipUnequipButton.textContent = "Unequip";
+    }
+  }
+
+  // Initialize button text
+  updateButtonText();
+
+  // Event listener for the Equip/Unequip button
+  equipUnequipButton.addEventListener('click', function () {
+    const selectedWeaponId = weaponSelect.value;
+
+    if (selectedWeaponId === "") {
+      alert('No weapon selected.');
+      return;
+    }
+    
+    // Toggle weapon state
+    if (selectedWeaponId === "") {
+      // Equip the weapon
+      weaponSelect.value = selectedWeaponId;
+    } else {
+      // Unequip the weapon
+      weaponSelect.value = "";
+    }
+
+    // Update the equippedWeapon in the actor
+    handleEquipUnequip(weaponSelect.value);
+
+    // Update the button text
+    updateButtonText();
+  });
+});
+
+
 /*Hooks.on('renderItemSheet', (app, html, data) => {
   console.log(data);
   // Add click handler for save button
