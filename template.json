@@ -95,7 +95,26 @@
     }
   },
   "Item": {
-    "types": ["item", "feature", "spell", "weapon"],
+    "types": [
+      "weapon",
+      "equipment",
+      "consumable",
+      "tool",
+      "loot",
+      "race",
+      "background",
+      "class",
+      "subclass",
+      "spell",
+      "feat",
+      "container",
+      "backpack"
+    ],
+    "htmlFields": [
+      "description.value",
+      "description.chat",
+      "unidentified.description"
+    ],
     "templates": {
       "base": {
         "description": ""
