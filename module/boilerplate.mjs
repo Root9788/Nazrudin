@@ -601,11 +601,16 @@ Hooks.on("renderChatMessage", (message, html, data) => {
     const speaker = message.speaker;
     const actor = getActorById(speaker.actor);
     const button = $(event.currentTarget);
+    const item = getItemById(button.data("weapon-id"))
+    const itemType = item.type;
     const weaponId = button.data("weapon-id");
     const weapon = getWeaponById(game.items, weaponId);
     const attributeBonus = actor.getAbilityValuesFromFormula(weapon.system.formula).gen;
     const attackFormula = `1d20 + ${attributeBonus}`;
-    const CRITICAL_THRESHOLD = 10; // Custom critical threshold
+    const CRITICAL_THRESHOLD = 18; // Custom critical threshold
+
+    console.log("ITEM");
+    console.log(itemType);
     
     let d = new Dialog({
         title: "Choose Attack Type",
@@ -726,6 +731,16 @@ function getWeaponById(weapons, weaponId) {
 function getActorById(actorId) {
   return game.actors.get(actorId);
 }
+
+/**
+ * Retrieves an item by its unique ID from the global game items collection.
+ * @param {string} itemID - The unique identifier for the item.
+ * @returns {Item|null} - The item if found, otherwise null.
+ */
+function getItemById(itemID) {
+  return game.items.get(itemID);
+}
+
 
 function checkCritical(roll, weapon, speaker, criticalThreshold, roll2 = null, condition = 'normal') {
   let messageContent = "";
