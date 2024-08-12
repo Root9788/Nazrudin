@@ -68,4 +68,21 @@ export class BoilerplateItem extends Item {
       return roll;
     }
   }
+
+  /**
+   * Place an attack roll using an item (weapon, feat, spell, or equipment)
+   * Rely upon the d20Roll logic for the core implementation
+   *
+   * @param {D20RollConfiguration} options  Roll options which are configured and provided to the d20Roll function
+   * @returns {Promise<D20Roll|null>}       A Promise which resolves to the created Roll instance
+   */
+  async rollAttack(options={}) {
+    Hooks.callAll("roll", this, roll, ammoUpdate);
+
+    // Commit ammunition consumption on attack rolls resource consumption if the attack roll was made
+    if ( ammoUpdate.length ) await this.actor?.updateEmbeddedDocuments("Item", ammoUpdate);
+    console.log("test Roll!!!")
+    return roll;
+  }
+
 }

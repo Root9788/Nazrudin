@@ -103,11 +103,7 @@ Handlebars.registerHelper('buildFormularForActor', function (varName, weapon, ac
   console.log(weapon)
   const abilityMod = weapon.system.hitChance;
 
-  options.data.root[varName] = `1d20+@abilities.${abilityMod}.mod`
-  //const diceNum = formDataObj['system.roll.diceNum'];
-  //const diceSize = formDataObj['system.roll.diceSize'];
-  //const diceBonus = formDataObj['system.roll.diceBonus'];
-  //const diceBonusStat = formDataObj['system.hitChance']; //<--- this is the stat shortcut
+  options.data.root[varName] = `1d20+@abilities.${abilityMod}.mod`;
   
 
 });
@@ -530,6 +526,28 @@ async function addXPToActor(actor, xpAmount) {
           default: "confirm"
         }).render(true);
       }
+  });
+  html.find('.rollable').click(async event => {
+    const label = $(event.currentTarget);
+    const weaponId = label.data("weapon-id");
+    const weapon = getWeaponNameById(data.weapons, weaponId);
+
+    if (!weapon) {
+        console.log("Weapon not found");
+        return;
+    }
+
+    // Construct buttons for Attack and Damage
+    const attackButton = `<button data-action="attack" data-weapon-id="${weaponId}">Attack</button>`;
+    const damageButton = `<button data-action="damage" data-weapon-id="${weaponId}">Damage</button>`;
+
+    // Create the chat message
+    ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: app.actor }),
+        content: `Actions for ${weapon}: ${attackButton} ${damageButton}`,
+    });
+
+    // Optionally handle button clicks within the same scope or separately
   }); 
 });
 
@@ -552,16 +570,6 @@ Hooks.on('renderItemSheet', (app, html, data) => {
     const diceBonusStat = formDataObj['system.hitChance']; //<--- this is the stat shortcut
 
     let abilityMod = 0;
-
-    // Check if diceBonusStat is defined and valid
-    /*if (diceBonusStat) {
-      const actor = app.actor; // The actor associated with the item
-      console.log("ACTOR");
-      console.log(diceBonusStat);
-      if (actor && actor.system.abilities[diceBonusStat]) {
-        abilityMod = actor.system.abilities[diceBonusStat].mod;
-      }
-    }*/
 
     // Construct the new formula
     const newFormula = `${diceNum}d${diceSize}+${diceBonus}+@abilities.${diceBonusStat}.mod`;
@@ -588,4 +596,164 @@ Hooks.on('renderItemSheet', (app, html, data) => {
 
 ////-------------------------TEST-----------------------////
 
+Hooks.on("renderChatMessage", (message, html, data) => {
+  html.find('button[data-action="attack"]').click(event => {
+    const speaker = message.speaker;
+    const actor = getActorById(speaker.actor);
+    const button = $(event.currentTarget);
+    const weaponId = button.data("weapon-id");
+    const weapon = getWeaponById(game.items, weaponId);
+    const attributeBonus = actor.getAbilityValuesFromFormula(weapon.system.formula).gen;
+    const attackFormula = `1d20 + ${attributeBonus}`;
+    const CRITICAL_THRESHOLD = 10; // Custom critical threshold
+    
+    let d = new Dialog({
+        title: "Choose Attack Type",
+        content: "<p>Select the type of attack:</p>",
+        buttons: {
+            normal: {
+                label: "Normal",
+                callback: async () => {
+                    let roll = new Roll(attackFormula);
+                    await roll.evaluate({ async: true });
+                    const wasCritical = checkCritical(roll, weapon, speaker, CRITICAL_THRESHOLD);
+                    setCriticalState(html, wasCritical);
+                }
+            },
+            advantage: {
+                label: "Advantage",
+                callback: async () => {
+                    let roll1 = new Roll(attackFormula);
+                    let roll2 = new Roll(attackFormula);
+                    await roll1.evaluate({ async: true });
+                    await roll2.evaluate({ async: true });
+                    let higherRoll = roll1.total >= roll2.total ? roll1 : roll2;
+                    const wasCritical = checkCritical(higherRoll, weapon, speaker, CRITICAL_THRESHOLD, roll2, 'advantage');
+                    setCriticalState(html, wasCritical);
+                }
+            },
+            disadvantage: {
+                label: "Disadvantage",
+                callback: async () => {
+                    let roll1 = new Roll(attackFormula);
+                    let roll2 = new Roll(attackFormula);
+                    await roll1.evaluate({ async: true });
+                    await roll2.evaluate({ async: true });
+                    let lowerRoll = roll1.total <= roll2.total ? roll1 : roll2;
+                    const wasCritical = checkCritical(lowerRoll, weapon, speaker, CRITICAL_THRESHOLD, roll2, 'disadvantage');
+                    setCriticalState(html, wasCritical);
+                }
+            }
+        },
+        default: "normal",
+        close: () => console.log("Attack dialog closed without making a choice.")
+    });
+    d.render(true);
+});
 
+
+  html.find('button[data-action="damage"]').click(event => {
+      const button = $(event.currentTarget);
+      const weaponId = button.data("weapon-id");
+      const wasCritical = getCriticalState(html);
+      //TODO: Implement the damage logic
+      console.log("Damage with weapon ID:", weaponId);
+  });
+});
+
+
+Hooks.on("createChatMessage", (message) => {
+  console.log("test ChatMessage");
+  console.log(message);
+  // Check if the message contains a roll
+  if (message.isRoll && message.rolls) {
+    // Check if it's a d20 roll
+    const dice = message.rolls; // Get dice parts of the roll
+    const d20Roll = dice.find(die => die.faces === 20 && die.number === 1); // Look for a single d20
+
+    if (d20Roll) {
+      console.log("A d20 roll was made:", message.roll.formula);
+      // You can further interact here, such as analyzing the result
+    }
+  }
+});
+
+Hooks.on("preCreateChatMessage", async (document, data, options, userId) => {
+  console.log("preChat ChatMessage");
+  console.log(document);
+  // Access the roll object
+  if (document.isRoll && document.roll) {
+    // Check for d20 rolls specifically
+    const d20Roll = document.roll.dice.find(die => die.faces === 20 && die.number === 1);
+    if (d20Roll) {
+      console.log("Intercepted a d20 roll:", document.roll.formula);
+      // Additional logic here
+    }
+  }
+});
+
+/**
+ * Retrieves the name of a weapon by its ID.
+ * @param {Array} weapons Array of weapon objects.
+ * @param {string} weaponId The unique identifier of the weapon.
+ * @return {string|null} The name of the weapon if found, otherwise null.
+ */
+function getWeaponNameById(weapons, weaponId) {
+  // Search for the weapon in the array using the provided ID
+  const weapon = weapons.find(weapon => weapon.id === weaponId);
+  // If the weapon is found, return its name; otherwise, return null
+  return weapon != null ? weapon.name : null;
+}
+
+/**
+ * Retrieves the name of a weapon by its ID.
+ * @param {Array} weapons Array of weapon objects.
+ * @param {string} weaponId The unique identifier of the weapon.
+ * @return {string|null} The name of the weapon if found, otherwise null.
+ */
+function getWeaponById(weapons, weaponId) {
+  // Search for the weapon in the array using the provided ID
+  const weapon = weapons.find(weapon => weapon.id === weaponId);
+  // If the weapon is found, return its name; otherwise, return null
+  return weapon != null ? weapon : null;
+}
+
+/**
+ * Retrieves an actor by their unique ID.
+ * @param {string} actorId - The unique identifier for the actor.
+ * @returns {Actor|null} - The actor if found, otherwise null.
+ */
+function getActorById(actorId) {
+  return game.actors.get(actorId);
+}
+
+function checkCritical(roll, weapon, speaker, criticalThreshold, roll2 = null, condition = 'normal') {
+  let messageContent = "";
+  let isCritical = false; // Flag to indicate if the roll is critical
+
+  if (condition === 'advantage' || condition === 'disadvantage') {
+      const chosenRoll = (condition === 'advantage' ? (roll.total >= roll2.total ? roll : roll2) : (roll.total <= roll2.total ? roll : roll2));
+      const discardedRoll = (condition === 'advantage' ? (roll.total < roll2.total ? roll : roll2) : (roll.total > roll2.total ? roll : roll2));
+      
+      messageContent += `Rolls: <span style="color: green;"><strong>${chosenRoll.total}</strong></span> and <span style="color: red; text-decoration: line-through;">${discardedRoll.total}</span><br>`;
+      isCritical = chosenRoll.terms[0].results[0].result >= criticalThreshold;
+  } else {
+      messageContent += `Roll: <strong>${roll.total}</strong><br>`;
+      isCritical = roll.terms[0].results[0].result >= criticalThreshold;
+  }
+  messageContent += `${isCritical ? "<span style='color: red; font-weight: bold;'>Critical Hit!</span>" : ""} Attack with ${weapon.name}`;
+  roll.toMessage({
+      speaker: speaker,
+      flavor: messageContent
+  });
+
+  return isCritical; // Return the critical hit status
+}
+
+function setCriticalState(html, isCritical) {
+  html.find('.message-content').data('was-critical', isCritical); // Store critical hit state in a data attribute
+}
+
+function getCriticalState(html) {
+  return html.find('.message-content').data('was-critical'); // Retrieve the stored critical hit state
+}

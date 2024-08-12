@@ -107,4 +107,26 @@ export class BoilerplateActor extends Actor {
 
     // Process additional NPC data here.
   }
+
+  /**
+     * Extracts ability modifiers from a formula and retrieves their values.
+     * @param {string} formula - The formula containing ability codes.
+     * @returns {Object} - An object with ability values.
+     */
+  getAbilityValuesFromFormula(formula) {
+    const abilityMatches = formula.match(/@abilities\.(\w+)\.mod/g);
+    const abilityValues = {};
+
+    if (abilityMatches) {
+        abilityMatches.forEach(match => {
+            const abilityCode = match.split('.')[1]; // e.g., "gen" from "@abilities.gen.mod"
+            if (this.system.abilities[abilityCode]) {
+                abilityValues[abilityCode] = this.system.abilities[abilityCode].mod;
+            }
+        });
+    }
+
+    return abilityValues;
+  }
+
 }
