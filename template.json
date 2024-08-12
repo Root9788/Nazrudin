@@ -97,6 +97,8 @@
   "Item": {
     "types": [
       "weapon",
+      "ability",
+      "spell",
       "equipment",
       "consumable",
       "tool",

@@ -15,7 +15,9 @@
   {{setById "weapon1" weapons system.selectedWeaponSlot1}}
   {{buildFormularForActor "formular" weapon1 system.selectedWeaponSlot1}}
   <!-- Assuming formular and weapon1 are correctly set in your context by the helper functions -->
-  <label for="rollWeapon" class="rollable" data-weapon-id="{{weapon1._id}}">Roll {{weapon1.name}}</label>
+  {{debug "Button"}}
+  {{debug weapon1._id}}
+  <label for="rollWeapon" class="rollable" data-id="{{weapon1._id}}">Roll {{weapon1.name}}</label>
 
 </div>
 

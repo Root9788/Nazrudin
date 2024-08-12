@@ -529,22 +529,23 @@ async function addXPToActor(actor, xpAmount) {
   });
   html.find('.rollable').click(async event => {
     const label = $(event.currentTarget);
-    const weaponId = label.data("weapon-id");
-    const weapon = getWeaponNameById(data.weapons, weaponId);
+    const itemId = label.data("id");
+    const item = getItemById(itemId).name;
 
-    if (!weapon) {
+
+    if (!item) {
         console.log("Weapon not found");
         return;
     }
 
     // Construct buttons for Attack and Damage
-    const attackButton = `<button data-action="attack" data-weapon-id="${weaponId}">Attack</button>`;
-    const damageButton = `<button data-action="damage" data-weapon-id="${weaponId}">Damage</button>`;
+    const attackButton = `<button data-action="attack" data-weapon-id="${itemId}">Attack</button>`;
+    const damageButton = `<button data-action="damage" data-weapon-id="${itemId}">Damage</button>`;
 
     // Create the chat message
     ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor: app.actor }),
-        content: `Actions for ${weapon}: ${attackButton} ${damageButton}`,
+        content: `Actions for ${item}: ${attackButton} ${damageButton}`,
     });
 
     // Optionally handle button clicks within the same scope or separately
@@ -601,16 +602,17 @@ Hooks.on("renderChatMessage", (message, html, data) => {
     const speaker = message.speaker;
     const actor = getActorById(speaker.actor);
     const button = $(event.currentTarget);
-    const item = getItemById(button.data("weapon-id"))
-    const itemType = item.type;
+    const item = getItemById(button.data("value"))
+    //const itemType = item.type;
     const weaponId = button.data("weapon-id");
     const weapon = getWeaponById(game.items, weaponId);
-    const attributeBonus = actor.getAbilityValuesFromFormula(weapon.system.formula).gen;
+    const attributeBonus = actor.getAbilityValueFromFormula(weapon.system.formula);
     const attackFormula = `1d20 + ${attributeBonus}`;
     const CRITICAL_THRESHOLD = 18; // Custom critical threshold
 
-    console.log("ITEM");
-    console.log(itemType);
+    console.log("attack formula");
+    console.log(data);
+    console.log(button.data());
     
     let d = new Dialog({
         title: "Choose Attack Type",
@@ -661,7 +663,18 @@ Hooks.on("renderChatMessage", (message, html, data) => {
       const button = $(event.currentTarget);
       const weaponId = button.data("weapon-id");
       const wasCritical = getCriticalState(html);
-      //TODO: Implement the damage logic
+      if (game.user.targets.size > 0) {
+        game.user.targets.forEach(token => {
+            console.log(token.actor.system);
+            // Example: Apply 5 damage to each target
+            let currentHP = token.actor.system.health.value;
+            let newHP = currentHP - 5;  // Assuming the damage is 5
+            token.actor.update({"system.attributes.hp.value": newHP});
+            console.log(`${token.name} takes 5 damage, new HP is ${newHP}.`);
+        });
+      } else {
+          console.log("No targets currently selected.");
+      }
       console.log("Damage with weapon ID:", weaponId);
   });
 });
