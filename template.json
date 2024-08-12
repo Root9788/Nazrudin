@@ -87,6 +87,26 @@
         "tal": {
           "value": 7
         }
+      },
+      "Schadenstats": {
+        "Kurzklingen": {
+          "value": 7
+        },
+        "Langklingenkunst": {
+          "value": 7
+        },
+        "Magie": {
+          "value": 7
+        },
+        "Schusswaffenkunst": {
+          "value": 7
+        },
+        "Schwere Waffen": {
+          "value": 7
+        },
+        "Spezial": {
+          "value": 7
+        }
       }
     },
     "npc": {
