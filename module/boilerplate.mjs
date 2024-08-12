@@ -539,8 +539,8 @@ async function addXPToActor(actor, xpAmount) {
     }
 
     // Construct buttons for Attack and Damage
-    const attackButton = `<button data-action="attack" data-weapon-id="${itemId}">Attack</button>`;
-    const damageButton = `<button data-action="damage" data-weapon-id="${itemId}">Damage</button>`;
+    const attackButton = `<button data-action="attack" data-id="${itemId}">Attack</button>`;
+    const damageButton = `<button data-action="damage" data-id="${itemId}">Damage</button>`;
 
     // Create the chat message
     ChatMessage.create({
@@ -567,13 +567,12 @@ Hooks.on('renderItemSheet', (app, html, data) => {
     // Extract individual values
     const diceNum = formDataObj['system.roll.diceNum'];
     const diceSize = formDataObj['system.roll.diceSize'];
-    const diceBonus = formDataObj['system.roll.diceBonus'];
     const diceBonusStat = formDataObj['system.hitChance']; //<--- this is the stat shortcut
 
     let abilityMod = 0;
 
     // Construct the new formula
-    const newFormula = `${diceNum}d${diceSize}+${diceBonus}+@abilities.${diceBonusStat}.mod`;
+    const newFormula = `${diceNum}d${diceSize}+@abilities.${diceBonusStat}.mod`;
 
     console.log("New Formula:");
     console.log(newFormula);
@@ -602,17 +601,14 @@ Hooks.on("renderChatMessage", (message, html, data) => {
     const speaker = message.speaker;
     const actor = getActorById(speaker.actor);
     const button = $(event.currentTarget);
-    const item = getItemById(button.data("value"))
-    //const itemType = item.type;
-    const weaponId = button.data("weapon-id");
-    const weapon = getWeaponById(game.items, weaponId);
-    const attributeBonus = actor.getAbilityValueFromFormula(weapon.system.formula);
+    
+    const item = getItemById(button.data("id"))
+    const attributeBonus = actor.getAbilityValueFromFormula(item.system.formula);
     const attackFormula = `1d20 + ${attributeBonus}`;
     const CRITICAL_THRESHOLD = 18; // Custom critical threshold
 
     console.log("attack formula");
-    console.log(data);
-    console.log(button.data());
+    console.log(item);
     
     let d = new Dialog({
         title: "Choose Attack Type",
@@ -623,7 +619,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
                 callback: async () => {
                     let roll = new Roll(attackFormula);
                     await roll.evaluate({ async: true });
-                    const wasCritical = checkCritical(roll, weapon, speaker, CRITICAL_THRESHOLD);
+                    const wasCritical = checkCritical(roll, item, speaker, CRITICAL_THRESHOLD);
                     setCriticalState(html, wasCritical);
                 }
             },
@@ -635,7 +631,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
                     await roll1.evaluate({ async: true });
                     await roll2.evaluate({ async: true });
                     let higherRoll = roll1.total >= roll2.total ? roll1 : roll2;
-                    const wasCritical = checkCritical(higherRoll, weapon, speaker, CRITICAL_THRESHOLD, roll2, 'advantage');
+                    const wasCritical = checkCritical(higherRoll, item, speaker, CRITICAL_THRESHOLD, roll2, 'advantage');
                     setCriticalState(html, wasCritical);
                 }
             },
@@ -647,7 +643,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
                     await roll1.evaluate({ async: true });
                     await roll2.evaluate({ async: true });
                     let lowerRoll = roll1.total <= roll2.total ? roll1 : roll2;
-                    const wasCritical = checkCritical(lowerRoll, weapon, speaker, CRITICAL_THRESHOLD, roll2, 'disadvantage');
+                    const wasCritical = checkCritical(lowerRoll, item, speaker, CRITICAL_THRESHOLD, roll2, 'disadvantage');
                     setCriticalState(html, wasCritical);
                 }
             }
