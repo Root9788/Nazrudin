@@ -584,7 +584,6 @@ Hooks.on('renderItemSheet', (app, html, data) => {
       'system.weight': formDataObj['system.weight'],
       'system.roll.diceNum': diceNum,
       'system.roll.diceSize': diceSize,
-      'system.roll.diceBonus': diceBonus,
       'system.formula': newFormula
     });
 
@@ -603,7 +602,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
     const button = $(event.currentTarget);
     
     const item = getItemById(button.data("id"))
-    const attributeBonus = actor.getAbilityValueFromFormula(item.system.formula);
+    const attributeBonus = actor.getAbilityValueFromFormula(item.system.hitChance);
     const attackFormula = `1d20 + ${attributeBonus}`;
     const CRITICAL_THRESHOLD = 18; // Custom critical threshold
 

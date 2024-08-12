@@ -128,8 +128,7 @@
       "weight": 0,
       "formula": "d20 + @str.mod + ceil(@lvl / 2)",
       "diceNum": 0,
-      "diceSize": 0,
-      "diceBonus":0
+      "diceSize": 0
     },
     "feature": {
       "templates": ["base"]
@@ -142,7 +141,7 @@
       "templates": ["base"],
       "weight": 0,
       "damage": 0,
-      "hitchance": "d20",
+      "damageDie": "d20",
       "critRate": 20,
       "critDamageMulti": 1.5,
       "range": 0

@@ -114,17 +114,10 @@ export class BoilerplateActor extends Actor {
      * @returns {Object} - An object with ability values.
      */
   getAbilityValueFromFormula(formula) {
-    const abilityMatches = formula.match(/@abilities\.(\w+)\.mod/g);
-
-    if (abilityMatches) {
-        for (let match of abilityMatches) {
-            const abilityCode = match.split('.')[1]; // Extract the ability code
-            if (this.system.abilities[abilityCode]) {
-                return this.system.abilities[abilityCode].mod; // Return the first matched ability modifier
-            }
-        }
+    //const abilityMatches = formula.match(/@abilities\.(\w+)\.mod/g);
+    if(this.system.abilities[formula].mod){
+      return this.system.abilities[formula].mod;
     }
-    
     return null; // Return null if no valid ability modifier is found
   }
 
