@@ -655,8 +655,13 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 
 
   html.find('button[data-action="damage"]').click(event => {
-      const button = $(event.currentTarget);
-      const weaponId = button.data("weapon-id");
+    const speaker = message.speaker;
+    const actor = getActorById(speaker.actor);
+    const button = $(event.currentTarget);
+    
+    const item = getItemById(button.data("id"))
+    const attributeBonus = actor.getAbilityValueFromFormula(item.system.hitChance);
+    const attackFormula = `1d20 + ${attributeBonus}`;
       const wasCritical = getCriticalState(html);
       if (game.user.targets.size > 0) {
         game.user.targets.forEach(token => {
@@ -670,7 +675,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
       } else {
           console.log("No targets currently selected.");
       }
-      console.log("Damage with weapon ID:", weaponId);
+      console.log("Damage with weapon ID:", item.id);
   });
 });
 
