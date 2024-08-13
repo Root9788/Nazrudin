@@ -654,28 +654,32 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 });
 
 
-  html.find('button[data-action="damage"]').click(event => {
+  html.find('button[data-action="damage"]').click(async event => {
     const speaker = message.speaker;
     const actor = getActorById(speaker.actor);
     const button = $(event.currentTarget);
     
-    const item = getItemById(button.data("id"))
+    const item = getItemById(button.data("id"));
     const attributeBonus = actor.getAbilityValueFromFormula(item.system.hitChance);
     const attackFormula = `1d20 + ${attributeBonus}`;
-      const wasCritical = getCriticalState(html);
-      if (game.user.targets.size > 0) {
-        game.user.targets.forEach(token => {
-            console.log(token.actor.system);
-            // Example: Apply 5 damage to each target
+    
+    const wasCritical = getCriticalState(html);
+    if (game.user.targets.size > 0) {
+        game.user.targets.forEach(async token => {
             let currentHP = token.actor.system.health.value;
-            let newHP = currentHP - 5;  // Assuming the damage is 5
-            token.actor.update({"system.attributes.hp.value": newHP});
+            const damage = 5; // Assuming the damage is 5
+            let newHP = currentHP - damage;
+            await token.actor.update({"system.health.value": newHP});
+
+            // Create floating text
+            createFloatingText(token, `-${damage}`, wasCritical);
+
             console.log(`${token.name} takes 5 damage, new HP is ${newHP}.`);
         });
-      } else {
-          console.log("No targets currently selected.");
-      }
-      console.log("Damage with weapon ID:", item.id);
+    } else {
+        console.log("No targets currently selected.");
+    }
+    console.log("Damage with weapon ID:", item.id);
   });
 });
 
@@ -784,4 +788,46 @@ function setCriticalState(html, isCritical) {
 
 function getCriticalState(html) {
   return html.find('.message-content').data('was-critical'); // Retrieve the stored critical hit state
+}
+
+function createFloatingText(token, text, critical) {
+  const style = new PIXI.TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 36,
+    fill: critical ? '#ff0000' : '#1e00ff', // Red for critical, bright green for normal
+    stroke: '#000000',
+    strokeThickness: 4,
+    fontWeight: 'bold', // Making the text bold
+    dropShadow: true,
+    dropShadowColor: '#000000',
+    dropShadowBlur: 6, // Increased blur for better visibility
+    dropShadowAngle: Math.PI / 6,
+    dropShadowDistance: 8, // Increased distance for a more pronounced shadow
+    align: 'center'
+  });
+
+  const textSprite = new PIXI.Text(text, style);
+  textSprite.position.set(token.center.x, token.center.y - 80); // Position slightly above the token
+  canvas.tokens.addChild(textSprite);
+
+  // Animate the text rising and fading
+  animateText(textSprite);
+}
+
+function animateText(textSprite) {
+  let count = 60; // Duration of the effect in frames
+  const animateFunc = () => {
+      textSprite.y -= 1; // Move text up
+      textSprite.alpha -= 1 / count; // Fade text out
+      count--;
+
+      if (count <= 0) {
+          canvas.tokens.removeChild(textSprite); // Remove text after animation
+          textSprite.destroy(); // Clean up resources
+      } else {
+          requestAnimationFrame(animateFunc); // Continue animation
+      }
+  };
+
+  animateFunc();
 }
