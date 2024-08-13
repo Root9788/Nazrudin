@@ -92,6 +92,7 @@
   <nav class="sheet-tabs tabs" data-group="primary">
     {{!-- Default tab is specified in actor-sheet.mjs --}}
     <a class="item" data-tab="features">Overview</a>
+    <a class="item" data-tab="schadenswerte">Schadenswerte</a>
     <a class="item" data-tab="equipment">Equipment</a>
     <a class="item" data-tab="items">Items</a>
     <a class="item" data-tab="spells">Spells & Abilities</a>
@@ -120,17 +121,7 @@
           </div>
         </aside>
 
-        {{!-- For the main features list, span the right two columns --}}
-         {{!--<section class="main grid-span-2">--}}
-          {{!-- This is a Handlebars partial. They're stored in the `/parts` folder next to this sheet, and defined in module/helpers/templates.mjs --}}
-          {{!-- {{> "systems/boilerplate/templates/actor/parts/actor-features.hbs"}} --}}
-         {{!--</section>--}}
-
         {{!-- Weapon Selection Dropdown --}}
-
-        {{debug "Actor debug start"}}
-        {{debug system}}
-        {{debug "Actor debug end"}}
         <section class="weapon-selection">
           <label for="weapon-select">Select Weapon to Equip:</label>
           <select id="weapon-select" name="system.selectedWeaponSlot">
@@ -144,14 +135,13 @@
               </option>
             {{/each}}
           </select>
-        </section>
+        
 
         <style>
           .resource4 + .resource4 {
             padding-top: 20px; /* Adjust this value to control the amount of padding */
           }
         </style>
-        <section class="resources3 grid-span-2">
           <!-- Open Points -->
           <div class="resource2 flex-group-center">
             {{#if (or (gt system.openHpPoints 0) (gt system.openAttributePoints 0))}}
@@ -182,6 +172,11 @@
     {{!-- Owned Equipment Tab --}}
     <div class="tab equipment" data-group="primary" data-tab="equipment">
       {{> "systems/nazrudin/templates/actor/parts/actor-weapons.hbs"}}
+    </div>
+
+    {{!-- Owned Items Tab --}}
+    <div class="tab schadenswerte" data-group="primary" data-tab="schadenswerte">
+       {{> "systems/nazrudin/templates/actor/parts/actor-schadenswerte.hbs"}}
     </div>
 
     {{!-- Owned Items Tab --}}

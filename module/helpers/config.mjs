@@ -23,6 +23,19 @@ BOILERPLATE.abilityAbbreviations = {
 };
 
 /**
+ * The set of Ability Scores used within the system.
+ * @type {Object}
+ */
+BOILERPLATE.schadenswerte = {
+  ges: 'BOILERPLATE.Ability.GES.abbr',
+  agi: 'BOILERPLATE.Ability.AGI.abbr',
+  gen: 'BOILERPLATE.Ability.GEN.abbr',
+  kon: 'BOILERPLATE.Ability.KON.abbr',
+  kkf: 'BOILERPLATE.Ability.KKF.abbr',
+  tal: 'BOILERPLATE.Ability.TAL.abbr',
+};
+
+/**
  * Level thresholds used for determining character level based on XP.
  * @type {Array<Object>}
  */

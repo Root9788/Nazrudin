@@ -1,0 +1,18 @@
+<!-- Schadenswerte (Damage Values) Tab -->
+{{debug "Test Schadenswerte"}}
+<div class="tab schadenswerte" data-group="primary" data-tab="schadenswerte">
+    <section class="grid grid-3col">
+        <aside class="sidebar">
+            <div class="abilities flexcol">
+                {{#each system.Schadenswerte as |value key|}}
+                <div class="ability flexrow flex-group-center">
+                    <label for="system.Schadenswerte.{{key}}.value" class="resource-label rollable flexlarge align-left">
+                        {{localize key}}: 
+                    </label>
+                    <input type="text" name="system.Schadenswerte.{{key}}.value" value="{{value.value}}" data-dtype="Number"/>
+                </div>
+                {{/each}}
+            </div>
+        </aside>
+    </section>
+</div>

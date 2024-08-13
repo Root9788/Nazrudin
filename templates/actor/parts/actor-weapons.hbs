@@ -14,13 +14,16 @@
   </select>
   {{setById "weapon1" weapons system.selectedWeaponSlot1}}
   {{buildFormularForActor "formular" weapon1 system.selectedWeaponSlot1}}
-  <!-- Assuming formular and weapon1 are correctly set in your context by the helper functions -->
-  {{debug "Button"}}
-  {{debug weapon1._id}}
-  <label for="rollWeapon" class="rollable" data-id="{{weapon1._id}}"> 
-    <img src="systems/nazrudin/assets/rollDice.svg" alt="Dice" style="width: 36px; height: 36px; vertical-align: middle;">
-  </label>
 
+  <!-- Conditionally display the roll dice image if a weapon is selected -->
+  {{#if weapon1._id}}
+    <label for="rollWeapon" class="rollable" data-id="{{weapon1._id}}">
+      <img src="systems/nazrudin/assets/rollDice.svg" alt="Dice" style="width: 28px; height: 28px; vertical-align: middle;">
+    </label>
+  {{else}}
+    <!-- Optionally show some placeholder or leave it empty if no weapon is selected -->
+    <label for="rollWeapon" class="rollable" style="display: none;"></label>
+  {{/if}}
 </div>
 
 <!-- Weapon Selection -->

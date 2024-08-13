@@ -11,6 +11,7 @@ export const preloadHandlebarsTemplates = async function () {
     'systems/nazrudin/templates/actor/parts/actor-weapons.hbs',
     'systems/nazrudin/templates/actor/parts/actor-spells.hbs',
     'systems/nazrudin/templates/actor/parts/actor-effects.hbs',
+    "systems/nazrudin/templates/actor/parts/actor-schadenswerte.hbs",
     // Item partials
     'systems/nazrudin/templates/item/parts/item-effects.hbs',
   ]);

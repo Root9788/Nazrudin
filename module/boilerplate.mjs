@@ -97,7 +97,7 @@ Handlebars.registerHelper('getById', function (source, idValue) {
 Handlebars.registerHelper('buildFormularForActor', function (varName, weapon, actor, options) { 
   // Ensure that the necessary properties exist
   if (!weapon || !actor) {
-    return 'Invalid weapon or actor';
+    return '';
   }
   console.log("weapon check")
   console.log(weapon)
@@ -245,6 +245,14 @@ Hooks.on('updateActor', async (actor, updateData, options, userId) => {
       console.log("XP is still below max XP, no changes made.");
     }
   }
+
+  //Update ActionPoints
+  if (updateData.system?.character?.ActionPoints?.value !== undefined) {
+    const tokens = actor.getActiveTokens(); // Get all tokens representing this actor
+    tokens.forEach(token => {
+        renderActionPoints(token); // Re-render action points for each token
+    });
+  }
 });
 
 
@@ -331,6 +339,7 @@ const DEFAULTS = {
   },
   openHpPoints: 0,
   openAttributePoints: 0,
+  actionPoints: 3
   // Add any other default values as needed
 };
 
@@ -347,9 +356,12 @@ async function resetCharacter(actor) {
     'system.shield.value': DEFAULTS.shield.value,
     'system.shield.max': DEFAULTS.shield.max,
     'system.openHpPoints': DEFAULTS.openHpPoints,
-    'system.openAttributePoints': DEFAULTS.openAttributePoints
+    'system.openAttributePoints': DEFAULTS.openAttributePoints,
+    'system.ActionPoints.curValue': DEFAULTS.actionPoints
     // Reset any other fields to their default values here
   });
+  console.log("Debug: Actor reset");
+  console.log(actor);
 
   ui.notifications.info(`Character ${actor.name} has been reset to its original state.`);
 }
@@ -554,7 +566,6 @@ async function addXPToActor(actor, xpAmount) {
 
 
 Hooks.on('renderItemSheet', (app, html, data) => {
-  console.log(data);
   
   // Add click handler for save button
   html.find('.save-button').click(async (event) => {
@@ -574,8 +585,6 @@ Hooks.on('renderItemSheet', (app, html, data) => {
     // Construct the new formula
     const newFormula = `${diceNum}d${diceSize}+@abilities.${diceBonusStat}.mod`;
 
-    console.log("New Formula:");
-    console.log(newFormula);
     
     // Update the item with the new values
     await app.object.update({
@@ -599,16 +608,13 @@ Hooks.on("renderChatMessage", (message, html, data) => {
   html.find('button[data-action="attack"]').click(event => {
     const speaker = message.speaker;
     const actor = getActorById(speaker.actor);
+    console.log(actor._id)
     const button = $(event.currentTarget);
-    
-    const item = getItemById(button.data("id"))
+    const item = getItemById(button.data("id"));
     const attributeBonus = actor.getAbilityValueFromFormula(item.system.hitChance);
     const attackFormula = `1d20 + ${attributeBonus}`;
     const CRITICAL_THRESHOLD = 18; // Custom critical threshold
 
-    console.log("attack formula");
-    console.log(item);
-    
     let d = new Dialog({
         title: "Choose Attack Type",
         content: "<p>Select the type of attack:</p>",
@@ -620,6 +626,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
                     await roll.evaluate({ async: true });
                     const wasCritical = checkCritical(roll, item, speaker, CRITICAL_THRESHOLD);
                     setCriticalState(html, wasCritical);
+                    deductActionPoints(actor._id, 1); // Deduct 1 AP for normal attack
                 }
             },
             advantage: {
@@ -632,6 +639,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
                     let higherRoll = roll1.total >= roll2.total ? roll1 : roll2;
                     const wasCritical = checkCritical(higherRoll, item, speaker, CRITICAL_THRESHOLD, roll2, 'advantage');
                     setCriticalState(html, wasCritical);
+                    deductActionPoints(actor._id, 2); // Deduct 2 AP for advantage attack
                 }
             },
             disadvantage: {
@@ -644,6 +652,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
                     let lowerRoll = roll1.total <= roll2.total ? roll1 : roll2;
                     const wasCritical = checkCritical(lowerRoll, item, speaker, CRITICAL_THRESHOLD, roll2, 'disadvantage');
                     setCriticalState(html, wasCritical);
+                    deductActionPoints(actor._id, 2); // Deduct 2 AP for disadvantage attack
                 }
             }
         },
@@ -685,8 +694,6 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 
 
 Hooks.on("createChatMessage", (message) => {
-  console.log("test ChatMessage");
-  console.log(message);
   // Check if the message contains a roll
   if (message.isRoll && message.rolls) {
     // Check if it's a d20 roll
@@ -701,8 +708,6 @@ Hooks.on("createChatMessage", (message) => {
 });
 
 Hooks.on("preCreateChatMessage", async (document, data, options, userId) => {
-  console.log("preChat ChatMessage");
-  console.log(document);
   // Access the roll object
   if (document.isRoll && document.roll) {
     // Check for d20 rolls specifically
@@ -711,6 +716,43 @@ Hooks.on("preCreateChatMessage", async (document, data, options, userId) => {
       console.log("Intercepted a d20 roll:", document.roll.formula);
       // Additional logic here
     }
+  }
+});
+
+//<--------------------------Hooks for Canvas------------------------------------>
+
+Hooks.on("canvasReady", canvas => {
+  canvas.tokens.placeables.forEach(token => {
+      if (token.actor.type === "character") { // Ensure it's a character token
+          renderActionPoints(token);
+      }
+  });
+});
+
+Hooks.on("updateToken", (tokenDocument, updateData, options, userId) => {
+  if (updateData.x !== undefined || updateData.y !== undefined || updateData.rotation !== undefined) {
+      const token = canvas.tokens.get(tokenDocument.id);
+      renderActionPoints(token);
+  }
+});
+
+
+//<--------------------------Hooks for Combat------------------------------------>
+
+//On Start of Player Turn Hook
+Hooks.on("updateCombat", async (combat, changed, options, userId) => {
+  // Check if the turn has changed
+  console.log("Debug combatant");
+  console.log(combat);
+  if (changed.turn !== undefined) {
+      const currentToken = await combat.turns[combat.turn].actorId;
+      const actor = getActorById(currentToken);
+      console.log(currentToken);
+      console.log(game);
+      if (actor.type === "character") { // Ensure that the actor is a character
+        await resetCharacterValues(actor._id);
+        await triggerStartOfTurnEffects(actor._id);
+      }
   }
 });
 
@@ -793,7 +835,7 @@ function getCriticalState(html) {
 function createFloatingText(token, text, critical) {
   const style = new PIXI.TextStyle({
     fontFamily: 'Arial',
-    fontSize: 36,
+    fontSize: 42,
     fill: critical ? '#ff0000' : '#1e00ff', // Red for critical, bright green for normal
     stroke: '#000000',
     strokeThickness: 4,
@@ -830,4 +872,71 @@ function animateText(textSprite) {
   };
 
   animateFunc();
+}
+
+function renderActionPoints(token) {
+  // Ensure you're using the latest actor data
+  token = canvas.tokens.get(token.id);
+  if (!token) return; // Token not found or not visible
+  console.log("Debug Token");
+  console.log(token);
+  const actionPoints = token.actor.system.ActionPoints.curValue;
+  const text = new PIXI.Text(`AP: ${actionPoints}`, {
+      fontFamily: 'Arial',
+      fontSize: 32,
+      fill: 0xFFFF00,
+      stroke: 0x000000,
+      strokeThickness: 4
+  });
+  text.position.set(token.w / 2 - text.width / 2, -37);
+
+  if (token.actionPointsText) {
+      token.removeChild(token.actionPointsText);
+      token.actionPointsText.destroy();
+  }
+
+  token.addChild(text);
+  token.actionPointsText = text;
+}
+
+async function deductActionPoints(actorId, amount) {
+  let actor = game.actors.get(actorId);
+  if (!actor) return; // Actor not found
+  console.log("debug deduct");
+  console.log(actor);
+  const currentAP = actor.system.ActionPoints.curValue;
+  const newAP = Math.max(currentAP - amount, 0);
+
+  console.log("Deducting action points:", amount, "New AP:", newAP);
+  await actor.update({'system.ActionPoints.curValue': newAP});
+
+  actor.getActiveTokens().forEach(token => {
+      renderActionPoints(token); // Update action point display on token
+  });
+}
+
+async function resetCharacterValues(actorId) {
+  let actor = game.actors.get(actorId);
+  if (!actor) return; // Actor not found
+
+  const maxActionPoints = actor.system.ActionPoints.maxValue;
+  await actor.update({'system.ActionPoints.curValue': maxActionPoints});
+
+  console.log(`Reset action points for ${actor.name} to ${maxActionPoints}.`);
+  actor.getActiveTokens().forEach(token => {
+      renderActionPoints(token);
+  });
+}
+
+async function triggerStartOfTurnEffects(actorId) {
+  // Trigger any effects that should start at the beginning of the turn
+  // Example: Check for ongoing effects like regeneration or fire damage
+  console.log(`Triggering start of turn effects for ${actorId}.`);
+
+  // Example effect: Regeneration
+  /* const health = actor.system.character.health;
+  const newHealth = Math.min(health.value + 5, health.max); // Regenerate 5 HP, but do not exceed max
+  await actor.update({'system.character.health.value': newHealth});
+
+  console.log(`${actor.name} regenerates 5 HP, now at ${newHealth}/${health.max}`); */
 }

@@ -88,7 +88,7 @@
           "value": 7
         }
       },
-      "Schadenstats": {
+      "Schadenswerte": {
         "Kurzklingen": {
           "value": 7
         },
@@ -107,6 +107,11 @@
         "Spezial": {
           "value": 7
         }
+      },
+      "ActionPoints":{
+        "curValue": 3,
+        "maxValue": 3,
+        "tmpBonus": 0
       }
     },
     "npc": {
