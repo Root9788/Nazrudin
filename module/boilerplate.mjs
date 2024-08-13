@@ -247,12 +247,12 @@ Hooks.on('updateActor', async (actor, updateData, options, userId) => {
   }
 
   //Update ActionPoints
-  if (updateData.system?.character?.ActionPoints?.value !== undefined) {
-    const tokens = actor.getActiveTokens(); // Get all tokens representing this actor
-    tokens.forEach(token => {
-        renderActionPoints(token); // Re-render action points for each token
+  if (updateData.system?.health || updateData.system?.ActionPoints) {
+    actor.getActiveTokens().forEach(token => {
+        renderTokenGraphics(token);
     });
   }
+
 });
 
 
@@ -356,8 +356,7 @@ async function resetCharacter(actor) {
     'system.shield.value': DEFAULTS.shield.value,
     'system.shield.max': DEFAULTS.shield.max,
     'system.openHpPoints': DEFAULTS.openHpPoints,
-    'system.openAttributePoints': DEFAULTS.openAttributePoints,
-    'system.ActionPoints.curValue': DEFAULTS.actionPoints
+    'system.openAttributePoints': DEFAULTS.openAttributePoints
     // Reset any other fields to their default values here
   });
   console.log("Debug: Actor reset");
@@ -723,16 +722,18 @@ Hooks.on("preCreateChatMessage", async (document, data, options, userId) => {
 
 Hooks.on("canvasReady", canvas => {
   canvas.tokens.placeables.forEach(token => {
-      if (token.actor.type === "character") { // Ensure it's a character token
-          renderActionPoints(token);
-      }
+    if (token.actor.type === "character") { // Ensure it's a character token
+        renderTokenGraphics(token);
+    }
   });
 });
 
 Hooks.on("updateToken", (tokenDocument, updateData, options, userId) => {
   if (updateData.x !== undefined || updateData.y !== undefined || updateData.rotation !== undefined) {
-      const token = canvas.tokens.get(tokenDocument.id);
-      renderActionPoints(token);
+    const token = canvas.tokens.get(tokenDocument.id);
+    if (token.actor.type === "character") { // Ensure it's a character token
+        renderTokenGraphics(token);
+    }
   }
 });
 
@@ -740,19 +741,49 @@ Hooks.on("updateToken", (tokenDocument, updateData, options, userId) => {
 //<--------------------------Hooks for Combat------------------------------------>
 
 //On Start of Player Turn Hook
-Hooks.on("updateCombat", async (combat, changed, options, userId) => {
+/* Hooks.on("updateCombat", async (combat, changed, options, userId) => {
   // Check if the turn has changed
   console.log("Debug combatant");
   console.log(combat);
   if (changed.turn !== undefined) {
       const currentToken = await combat.turns[combat.turn].actorId;
-      const actor = getActorById(currentToken);
+      let actor = getActorById(currentToken);
       console.log(currentToken);
       console.log(game);
       if (actor.type === "character") { // Ensure that the actor is a character
         await resetCharacterValues(actor._id);
         await triggerStartOfTurnEffects(actor._id);
       }
+      actor.getActiveTokens().forEach(token => {
+        if(token.type === "character"){
+          renderTokenGraphics(token);
+        }
+      });
+  }
+}); */
+
+Hooks.on("updateCombat", async (combat, changed, options, userId) => {
+  // Check if the turn has changed
+  if (changed.turn !== undefined) {
+      const currentToken = combat.turns[combat.turn]?.actorId;
+      if (!currentToken) return;
+
+      let actor = game.actors.get(currentToken);
+      if (!actor) return;
+
+      console.log(`Processing turn for ${actor.name}`);
+      console.log(combat.turns[combat.turn]);
+
+      if (actor.type === "character") { // Ensure that the actor is a character
+        await resetCharacterValues(actor._id);
+        await triggerStartOfTurnEffects(actor._id);
+      }
+
+      actor.getActiveTokens().forEach(token => {
+        if (token.actor.type === "character") {
+          renderTokenGraphics(token);
+        }
+      });
   }
 });
 
@@ -848,8 +879,9 @@ function animateText(textSprite) {
   animateFunc();
 }
 
-function renderActionPoints(token) {
+/* function renderActionPoints(token) {
   // Ensure you're using the latest actor data
+  console.log("render");
   token = canvas.tokens.get(token.id);
   if (!token) return; // Token not found or not visible
   const actionPoints = token.actor.system.ActionPoints.curValue;
@@ -869,11 +901,148 @@ function renderActionPoints(token) {
 
   token.addChild(text);
   token.actionPointsText = text;
-}
+} */
+
+/* function renderActionPoints(token) {
+  // Remove old action points bar if it exists
+  if (token.actionPointsBar) {
+      token.removeChild(token.actionPointsBar);
+      token.actionPointsBar.destroy();
+  }
+
+  const maxActionPoints = token.actor.system.ActionPoints.maxValue;
+  const currentActionPoints = token.actor.system.ActionPoints.curValue;
+
+  // Create a new PIXI graphics object for the action points bar
+  const bar = new PIXI.Graphics();
+  bar.beginFill(0x00FF00); // Green color for the filled part
+  const barWidth = token.w * (currentActionPoints / maxActionPoints);
+  const barHeight = 5; // Height of the bar in pixels
+  bar.drawRect(0, 0, barWidth, barHeight);
+  bar.endFill();
+
+  bar.beginFill(0xFF0000); // Red color for the empty part
+  bar.drawRect(barWidth, 0, token.w - barWidth, barHeight);
+  bar.endFill();
+
+  // Set the position of the bar slightly above the token
+  bar.position.set(token.w / 2 - token.w / 2, -10);
+
+  // Add the bar to the token
+  token.addChild(bar);
+  token.actionPointsBar = bar; // Store reference to bar in token for easy access and removal
+} */
+
+  function renderTokenGraphics(token) {
+    // Remove old health bar and related graphics if they exist
+    if (token.healthBar) {
+        token.removeChild(token.healthBar);
+        token.healthBar.destroy();
+    }
+
+    if (token.healthBarBackground) {
+        token.removeChild(token.healthBarBackground);
+        token.healthBarBackground.destroy();
+    }
+
+    if (token.healthText) {
+        token.removeChild(token.healthText);
+        token.healthText.destroy();
+    }
+
+    // Remove old action points bar and related graphics if they exist
+    if (token.actionPointsBackground) {
+        token.removeChild(token.actionPointsBackground);
+        token.actionPointsBackground.destroy();
+    }
+
+    if (token.actionPointsText) {
+        token.removeChild(token.actionPointsText);
+        token.actionPointsText.destroy();
+    }
+
+    // Fetch current health and action points from the actor
+    const currentHealth = token.actor.system.health.value;
+    const maxHealth = token.actor.system.health.max;
+    const currentActionPoints = token.actor.system.ActionPoints.curValue;
+    const currentTmpBonusAP = token.actor.system.ActionPoints.tmpBonus;
+    const maxActionPoints = token.actor.system.ActionPoints.maxValue;
+
+    // Draw Health Bar Above the Token
+    const barHeight = 10;
+    const barWidth = token.w; // Width of the health bar is the same as the token width
+    const barX = 0; // Start at the left edge of the token
+    const barY = -15; // Position above the token
+
+    // Background for the health bar
+    const barBackground = new PIXI.Graphics();
+    barBackground.beginFill(0x333333); // Dark gray background
+    barBackground.drawRect(barX, barY, barWidth, barHeight);
+    barBackground.endFill();
+
+    token.addChild(barBackground);
+    token.healthBarBackground = barBackground;
+
+    // Health bar itself
+    const healthBar = new PIXI.Graphics();
+    const healthBarWidth = (barWidth * currentHealth) / maxHealth;
+
+    healthBar.beginFill(0xFF0000); // Red color for the health bar
+    healthBar.drawRect(barX, barY, healthBarWidth, barHeight);
+    healthBar.endFill();
+
+    token.addChild(healthBar);
+    token.healthBar = healthBar;
+
+    // Health text (optional)
+    const healthText = new PIXI.Text(`${currentHealth}/${maxHealth}`, {
+        fontFamily: 'Arial',
+        fontSize: 14,
+        fill: 0xFFFFFF, // White text
+        stroke: 0x000000, // Black stroke for better visibility
+        strokeThickness: 3,
+    });
+    healthText.anchor.set(0.5);
+    healthText.position.set(barX + (barWidth / 2), barY - barHeight / 2 - 2); // Position the text above the bar
+
+    token.addChild(healthText);
+    token.healthText = healthText;
+
+    // Draw Action Points Below the Token
+    const apBackgroundWidth = 60; // Adjust width to fit the text nicely
+    const apBackgroundHeight = 30; // Height of the background
+    const apBackgroundX = (token.w / 2) - (apBackgroundWidth / 2); // Center horizontally relative to the token
+    const apBackgroundY = token.h + 5; // Position below the token with a 5px gap
+
+    // Background for action points
+    const apBackground = new PIXI.Graphics();
+    apBackground.beginFill(0x333333); // Dark gray background
+    apBackground.drawRoundedRect(apBackgroundX, apBackgroundY, apBackgroundWidth, apBackgroundHeight, 5); // Rounded corners
+    apBackground.endFill();
+
+    token.addChild(apBackground);
+    token.actionPointsBackground = apBackground;
+
+    const aPToApply = currentActionPoints + currentTmpBonusAP;
+    // Action points text
+    const apText = new PIXI.Text(`AP: ${aPToApply}`, {
+        fontFamily: 'Arial',
+        fontSize: 20,
+        fill: 0xFFFFFF, // White text
+        stroke: 0x000000, // Black stroke for better visibility
+        strokeThickness: 4,
+    });
+    apText.anchor.set(0.5);
+    apText.position.set(apBackgroundX + (apBackgroundWidth / 2), apBackgroundY + apBackgroundHeight / 2); // Center the text on the background
+
+    token.addChild(apText);
+    token.actionPointsText = apText;
+  }
 
 async function deductActionPoints(actorId, amount) {
   let actor = game.actors.get(actorId);
   if (!actor) return; // Actor not found
+
   const currentAP = actor.system.ActionPoints.curValue;
   const newAP = Math.max(currentAP - amount, 0);
 
@@ -881,12 +1050,12 @@ async function deductActionPoints(actorId, amount) {
   await actor.update({'system.ActionPoints.curValue': newAP});
 
   actor.getActiveTokens().forEach(token => {
-      renderActionPoints(token); // Update action point display on token
+    renderTokenGraphics(token); // Update action point display on token
   });
 }
 
 async function resetCharacterValues(actorId) {
-  let actor = game.actors.get(actorId);
+  let actor = getTokenByActorId(actorId).actor;
   if (!actor) return; // Actor not found
 
   const maxActionPoints = actor.system.ActionPoints.maxValue;
@@ -894,19 +1063,42 @@ async function resetCharacterValues(actorId) {
 
   console.log(`Reset action points for ${actor.name} to ${maxActionPoints}.`);
   actor.getActiveTokens().forEach(token => {
-      renderActionPoints(token);
+    renderTokenGraphics(token);
   });
 }
 
 async function triggerStartOfTurnEffects(actorId) {
-  // Trigger any effects that should start at the beginning of the turn
-  // Example: Check for ongoing effects like regeneration or fire damage
   console.log(`Triggering start of turn effects for ${actorId}.`);
+  const tmpBonusAP = 0;
+  let actor = getTokenByActorId(actorId).actor;
+  if (!actor) {
+    console.error(`Actor with ID ${actorId} not found.`);
+    return;
+  }
+  
+  const health = actor.system.health;
+  const newHealth = Math.min(health.value + 5, health.max);
+  // Regenerate 5 HP, but do not exceed max
+  await actor.update(
+    {'system.health.value': newHealth,
+    'system.ActionPoints.tmpBonus': tmpBonusAP
+  });
 
-  // Example effect: Regeneration
-  /* const health = actor.system.character.health;
-  const newHealth = Math.min(health.value + 5, health.max); // Regenerate 5 HP, but do not exceed max
-  await actor.update({'system.character.health.value': newHealth});
+  actor.getActiveTokens().forEach(token => {
+    renderTokenGraphics(token);
+  });
 
-  console.log(`${actor.name} regenerates 5 HP, now at ${newHealth}/${health.max}`); */
+  console.log(`${actor.name} regenerates 5 HP, now at ${newHealth}/${health.max}`);
+}
+
+function getTokenByActorId(actorId) {
+  // Iterate over all tokens on the canvas
+  for (let token of canvas.tokens.placeables) {
+      // Check if the token's actor ID matches the provided actorId
+      if (token.actor?.id === actorId) {
+          return token;
+      }
+  }
+  // If no matching token is found, return null or undefined
+  return null;
 }
