@@ -757,32 +757,6 @@ Hooks.on("updateCombat", async (combat, changed, options, userId) => {
 });
 
 /**
- * Retrieves the name of a weapon by its ID.
- * @param {Array} weapons Array of weapon objects.
- * @param {string} weaponId The unique identifier of the weapon.
- * @return {string|null} The name of the weapon if found, otherwise null.
- */
-function getWeaponNameById(weapons, weaponId) {
-  // Search for the weapon in the array using the provided ID
-  const weapon = weapons.find(weapon => weapon.id === weaponId);
-  // If the weapon is found, return its name; otherwise, return null
-  return weapon != null ? weapon.name : null;
-}
-
-/**
- * Retrieves the name of a weapon by its ID.
- * @param {Array} weapons Array of weapon objects.
- * @param {string} weaponId The unique identifier of the weapon.
- * @return {string|null} The name of the weapon if found, otherwise null.
- */
-function getWeaponById(weapons, weaponId) {
-  // Search for the weapon in the array using the provided ID
-  const weapon = weapons.find(weapon => weapon.id === weaponId);
-  // If the weapon is found, return its name; otherwise, return null
-  return weapon != null ? weapon : null;
-}
-
-/**
  * Retrieves an actor by their unique ID.
  * @param {string} actorId - The unique identifier for the actor.
  * @returns {Actor|null} - The actor if found, otherwise null.
@@ -878,8 +852,6 @@ function renderActionPoints(token) {
   // Ensure you're using the latest actor data
   token = canvas.tokens.get(token.id);
   if (!token) return; // Token not found or not visible
-  console.log("Debug Token");
-  console.log(token);
   const actionPoints = token.actor.system.ActionPoints.curValue;
   const text = new PIXI.Text(`AP: ${actionPoints}`, {
       fontFamily: 'Arial',
@@ -902,8 +874,6 @@ function renderActionPoints(token) {
 async function deductActionPoints(actorId, amount) {
   let actor = game.actors.get(actorId);
   if (!actor) return; // Actor not found
-  console.log("debug deduct");
-  console.log(actor);
   const currentAP = actor.system.ActionPoints.curValue;
   const newAP = Math.max(currentAP - amount, 0);
 
