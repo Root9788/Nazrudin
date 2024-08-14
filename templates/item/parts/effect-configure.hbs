@@ -1,0 +1,26 @@
+<form class="effect-configure-form">
+  <div class="form-group">
+    <label for="effect-name">Effect Name</label>
+    <input type="text" name="effect-name" value="{{effectName}}" required />
+  </div>
+  <div class="form-group">
+    <label for="effect-duration">Duration (Rounds)</label>
+    <input type="number" name="effect-duration" value="{{effectDuration}}" min="1" required />
+  </div>
+  <div class="form-group">
+    <label for="effect-stat">Affected Stat</label>
+    <select name="effect-stat" required>
+      {{#each actorAttributes}}
+      <option value="{{key}}" {{#if (eq key ../effectStat)}}selected{{/if}}>{{key}}</option>
+      {{/each}}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="effect-value">Value Change</label>
+    <input type="number" name="effect-value" value="{{effectValue}}" required />
+  </div>
+  <div class="form-group">
+    <label for="effect-description">Description</label>
+    <textarea name="effect-description">{{effectDescription}}</textarea>
+  </div>
+</form>

@@ -120,5 +120,55 @@ export class BoilerplateActor extends Actor {
     }
     return null; // Return null if no valid ability modifier is found
   }
+  
+   /**
+   * Get all actor attributes including those in the character schema.
+   * @returns {Array} Array of objects containing attribute keys and their values.
+   */
+   getAllActorAttributes() {
+    const systemData = this.system;
+    const attributes = [];
+
+    // Collect all base attributes (Actor's base template)
+    for (const key in systemData) {
+        if (typeof systemData[key] === 'object' && !Array.isArray(systemData[key])) {
+            for (const subKey in systemData[key]) {
+                attributes.push({ key: `${key}.${subKey}`, value: systemData[key][subKey] });
+            }
+        } else if (typeof systemData[key] !== 'object') {
+            attributes.push({ key: key, value: systemData[key] });
+        }
+    }
+
+    // Collect attributes from 'attributes' section (Character's specific attributes)
+    if (systemData.attributes) {
+        for (const attrKey in systemData.attributes) {
+            attributes.push({ key: `attributes.${attrKey}`, value: systemData.attributes[attrKey] });
+        }
+    }
+
+    // Collect abilities (Character's abilities)
+    if (systemData.abilities) {
+        for (const abilityKey in systemData.abilities) {
+            attributes.push({ key: `abilities.${abilityKey}`, value: systemData.abilities[abilityKey].value });
+        }
+    }
+
+    // Collect Schadenswerte (Character's Schadenswerte section)
+    if (systemData.Schadenswerte) {
+        for (const schadenKey in systemData.Schadenswerte) {
+            attributes.push({ key: `Schadenswerte.${schadenKey}`, value: systemData.Schadenswerte[schadenKey].value });
+        }
+    }
+
+    // Collect ActionPoints (Character's action points)
+    if (systemData.ActionPoints) {
+        for (const actionKey in systemData.ActionPoints) {
+            attributes.push({ key: `ActionPoints.${actionKey}`, value: systemData.ActionPoints[actionKey] });
+        }
+    }
+
+    return attributes;
+  }
 
 }

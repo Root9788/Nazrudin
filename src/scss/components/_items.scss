@@ -132,3 +132,16 @@
   border-top: 1px solid #cb1d1d;
   padding-top: 10px;
 }
+
+.clickable-image {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.clickable-image:hover {
+  box-shadow: 0 0 10px red;
+  transition: box-shadow 0.3s ease;
+}

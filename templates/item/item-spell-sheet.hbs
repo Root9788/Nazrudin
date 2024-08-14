@@ -1,5 +1,120 @@
 <form class='{{cssClass}}' autocomplete='off'>
-  <header class='sheet-header'>
+  <!-- Spell Header -->
+  <header class="sheet-header">
+    <img src="{{item.img}}" title="{{item.name}}" data-edit="img"/>
+    <div class="header-fields">
+      <h1>
+        <input type="text" name="name" value="{{item.name}}" placeholder="Spell Name" required/>
+      </h1>
+    </div>
+  </header>
+
+  <!-- Spell Properties -->
+  <section class="grid grid-2col">
+    <div class="form-group">
+      <label>Skill Quality</label>
+      <select name="system.skillQuality">
+        <option value="1" {{#if (eq system.skillQuality 1)}}selected{{/if}}>1</option>
+        <option value="2" {{#if (eq system.skillQuality 2)}}selected{{/if}}>2</option>
+        <option value="3" {{#if (eq system.skillQuality 3)}}selected{{/if}}>3</option>
+        <option value="4" {{#if (eq system.skillQuality 4)}}selected{{/if}}>4</option>
+        <option value="5" {{#if (eq system.skillQuality 5)}}selected{{/if}}>5</option>
+        <!-- Add more options as needed -->
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Casting Time</label>
+      <input type="text" name="system.castingTime" value="{{system.castingTime}}"/>
+    </div>
+    <div class="form-group">
+      <label>Range</label>
+      <input type="text" name="system.range" value="{{system.range}}"/>
+    </div>
+    <div class="form-group">
+      <label>Targetable</label>
+      <select name="system.targetable">
+        <option value="V" {{#if (eq system.targetable "V")}}selected{{/if}}>Verbal (V)</option>
+        <option value="S" {{#if (eq system.targetable "S")}}selected{{/if}}>Somatic (S)</option>
+        <option value="M" {{#if (eq system.targetable "M")}}selected{{/if}}>Material (M)</option>
+        <!-- Add more options as needed -->
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <select name="system.type">
+        <option value="Buff" {{#if (eq system.type "Buff")}}selected{{/if}}>Buff</option>
+        <option value="Debuff" {{#if (eq system.type "Debuff")}}selected{{/if}}>Debuff</option>
+        <option value="Damage" {{#if (eq system.type "Damage")}}selected{{/if}}>Damage</option>
+        <option value="Healing" {{#if (eq system.type "Healing")}}selected{{/if}}>Healing</option>
+        <!-- Add more options as needed -->
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Spell Damage</label>
+      <input type="number" name="system.spellDamage" value="{{system.spellDamage}}" min="0"/>
+    </div>
+  </section>
+
+  <style>
+    .add-effect-container {
+      text-align: center; /* Center the image horizontally */
+      margin-bottom: 10px; /* Add some space between the image and the save button */
+    }
+    .clickable-image {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+
+    .clickable-image:hover {
+      box-shadow: 0 0 10px red;
+      transition: box-shadow 0.3s ease;
+    }
+  </style>
+  <!-- Effects -->
+  <section class="spell-effects">
+    <h2>Effects</h2>
+    {{#each system.effects as |effect index|}}
+      <div class="effect flexrow">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" name="system.effects.[{{index}}].name" value="{{effect.name}}" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Duration</label>
+          <input type="number" name="system.effects.[{{index}}].duration" value="{{effect.duration}}" min="1" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Stat</label>
+          <input type="text" name="system.effects.[{{index}}].changes.[0].stat" value="{{effect.changes.[0].stat}}" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Value</label>
+          <input type="number" name="system.effects.[{{index}}].changes.[0].value" value="{{effect.changes.[0].value}}" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" name="system.effects.[{{index}}].description" value="{{effect.description}}" readonly/>
+        </div>
+        <img src="\systems\nazrudin\assets\edit.svg" alt="Edit" data-index="{{index}}" class="edit-effect-button clickable-image">
+        <img src="\systems\nazrudin\assets\Trashcan.svg" alt="Delete" data-index="{{index}}" class="delete-effect-button clickable-image">
+      </div>
+    {{/each}}
+</section>
+
+  <!-- Place the Add Image above the Save Button -->
+  <div class="add-effect-container">
+    <img src="\systems\nazrudin\assets\Add.svg" alt="Add Effect" class="add-effect-button clickable-image">
+  </div>
+
+  <!-- Save Button -->
+  <footer class="sheet-footer">
+    <button type="submit" class="save-button-spell">Save Spell</button>
+  </footer>
+</form>
+  <!--<header class='sheet-header'>
     <img
       class='profile-img'
       src='{{item.img}}'
@@ -51,4 +166,4 @@
       </div>
     </div>
   </section>
-</form>
+</form>-->
