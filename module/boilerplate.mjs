@@ -674,15 +674,69 @@ Hooks.on("renderChatMessage", (message, html, data) => {
     const wasCritical = getCriticalState(html);
     if (game.user.targets.size > 0) {
         game.user.targets.forEach(async token => {
+            
+            //Damage Formula vars     todoMartin
+            // weapon
+            let BaseDMG_Weapon = item.system.damage;
+            let Scalingwert = 0;
+
+            console.log("debug item", item);
+
+            // player
+            let WaffenTypLevelDMG = 0; // todo add Waffentalentlevelsystem; update Actor
+            let PersonalMultiplier = 1;
+            let Kritschadenmultiplikatoren = 1;
+            let entsprechendenSchadenwert = 1; // Schadenstats
+
+            // item
+            let ItemDMG = 0;
+
+            // skills
+            let SkillDMG = 0;     // todo add Skillsystem
+            let PenValue = 0;
+
+            // enemy
+            let ImmunityEntety = 0;
+            let WeaknessesEntety = 1;
+            let ResistencesEntety = 0;
+            let Amor = 0;
+            let Magresi = 0;
+            
+            
+            //todo add loop, to add all item damages in var ItemDMG.
+
+            //Var zum Differ
+            let Krit = wasCritical;
+            console.log("Debug was krit", wasCritical);
+            let ignoreEffect = false;
+            let magAttack = false;
+
+            //Damage Formula
+            let ScalingDMG = Number(Scalingwert) * Number(entsprechendenSchadenwert);
+
+            //let BaseDMG = (BaseDMG_Weapon + ScalingDMG + WaffenTypLevelDMG + SkillDMG + ItemDMG) * PersonalMultiplier;
+            let BaseDMG = (Number(BaseDMG_Weapon) + Number(ScalingDMG) + Number(WaffenTypLevelDMG) + Number(SkillDMG) + Number(ItemDMG)) * Number(PersonalMultiplier);
+            const OutgoingDMG = Number(BaseDMG) * Number((Krit? Number(1.5) + Number(Kritschadenmultiplikatoren) : 1));
+            //const ElementalMultiplier = (WeaknessesEntety + (ResistencesEntety - (PenValue * ResistencesEntety)) * (ignoreEffect? 1 : ImmunityEntety));
+            const ElementalMultiplier = (Number(WeaknessesEntety) + (Number(ResistencesEntety) - (Number(PenValue) * Number(ResistencesEntety))) * (ignoreEffect ? 1 : Number(ImmunityEntety)));
+            const CalculatedDMG = Number(OutgoingDMG) * Number(ElementalMultiplier);
+            const DMGToApply = Number(CalculatedDMG) - Number((magAttack? Magresi : Amor));
+
             let currentHP = token.actor.system.health.value;
-            const damage = 5; // Assuming the damage is 5
-            let newHP = currentHP - damage;
+            
+            let newHP = currentHP - DMGToApply; //todo hier den DMG für Tracker abgreifen
+            
+
+            if(newHP <= 0){  //todo add effect unconscious and death
+              newHP = 0;
+            }
+
             await token.actor.update({"system.health.value": newHP});
 
             // Create floating text
-            createFloatingText(token, `-${damage}`, wasCritical);
-
-            console.log(`${token.name} takes 5 damage, new HP is ${newHP}.`);
+            createFloatingText(token, `-${DMGToApply}`, wasCritical);
+            
+            console.log(`${token.name} takes ${DMGToApply} damage, new HP is ${newHP}.`);
         });
     } else {
         console.log("No targets currently selected.");
