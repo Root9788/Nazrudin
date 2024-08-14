@@ -74,6 +74,50 @@
     }
   </style>
 
+  <!-- Effects Section -->
+  <section class="spell-effects">
+    <h2>Effects</h2>
+    {{#each system.effects as |effect index|}}
+      <div class="effect flexrow">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" name="system.effects.[{{index}}].name" value="{{effect.name}}" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Duration</label>
+          <input type="number" name="system.effects.[{{index}}].duration" value="{{effect.duration}}" min="1" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Stat</label>
+          <input type="text" name="system.effects.[{{index}}].statToChanges" value="{{effect.statToChanges}}" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Value</label>
+          <input type="number" name="system.effects.[{{index}}].amountToChange" value="{{effect.amountToChange}}" min="0" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" name="system.effects.[{{index}}].description" value="{{effect.description}}" readonly/>
+        </div>
+        <img src="\systems\nazrudin\assets\Edit.svg" alt="Edit" data-index="{{index}}" class="edit-effect-button clickable-image">
+        <img src="\systems\nazrudin\assets\Trashcan.svg" alt="Delete" data-index="{{index}}" class="delete-effect-button clickable-image">
+      </div>
+    {{/each}}
+  </section>
+
+  <!-- Place the Add Image above the Save Button -->
+  <div class="add-effect-container">
+    <img src="\systems\nazrudin\assets\Add.svg" alt="Add Effect" class="add-effect-button clickable-image">
+  </div>
+
+  <!-- Save Button -->
+  <footer class="sheet-footer">
+    <button type="submit" class="save-button-spell">Save Spell</button>
+  </footer>
+</form>
+
+
+
   <!-- Effects Section 
   <section class="spell-effects">
     <h2>Effects</h2>
@@ -106,14 +150,3 @@
       {{/unless}}
     {{/each}}
   </section>-->
-
-  <!-- Place the Add Image above the Save Button -->
-  <div class="add-effect-container">
-    <img src="\systems\nazrudin\assets\Add.svg" alt="Add Effect" class="add-effect-button clickable-image">
-  </div>
-
-  <!-- Save Button -->
-  <footer class="sheet-footer">
-    <button type="submit" class="save-button-spell">Save Spell</button>
-  </footer>
-</form>

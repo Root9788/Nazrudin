@@ -623,147 +623,9 @@ Hooks.on('renderItemSheet', (app, html, data) => {
     app.object.system.effects = [];
   }
 
-  // Handle adding a new effect
-  /* html.find('.add-effect-button').click(ev => {
-    ev.preventDefault();
-
-    // Add a new default effect to the effects array
-    app.object.system.effects.push({
-      name: "New Effect",
-      duration: 1,
-      changes: [{ stat: "strength", value: 1 }],
-      description: "Effect description"
-    });
-
-    app.render(true); // Re-render the form to display the new effect
-  }); */
-  // Handle the add effect button click
-  html.find('.add-effect-button').click((event) => {
-    event.preventDefault();
-
-    // Open the effect configuration dialog with empty/default values
-    openEffectDialog(app, {}, -1);
-  });
-
-  // Handle the edit effect button click
-  html.find('.edit-effect-button').click((event) => {
-    event.preventDefault();
-    
-    const index = $(event.currentTarget).data("index");
-    console.log("Debug Effect index:", index);
-    const effects = app.object.system.effects;
-    console.log("Debug Effect app:", app.object.system);
-
-
-    // Check if the effect exists at the given index
-    if (index >= 0 && index < effects.length) {
-        const effect = effects[index];
-
-        // Open the effect configuration dialog with the current effect's data
-        openEffectDialog(app, effect, index);
-    } else {
-        console.error("Effect not found at index:", index);
-    }
 });
 
-  // Handle the delete effect image click
-  html.find('.delete-effect-button').click(ev => {
-    ev.preventDefault();
-    const index = ev.currentTarget.dataset.index;
 
-    // Remove the effect at the specified index
-    app.object.system.effects.splice(index, 1);
-
-    app.render(true); // Re-render the form to update the effects list
-  });
-
-  // Handle the save button click
-  html.find('.save-button-spell').click(async (event) => {
-    event.preventDefault();
-
-
-    app.close();
-  });
-
-});
-
-/**
-* Open a dialog to configure an effect, either for adding a new effect or editing an existing one.
-* 
-* @param {Object} app - The application object.
-* @param {Object} effect - The effect data to pre-fill the form with (empty for new effects).
-* @param {number} index - The index of the effect to edit (-1 for adding a new effect).
-*/
-function openEffectDialog(app, effectData = {}, index = -1) {
-  const actor = game.actors.contents[0];
-
-  if (!actor || typeof actor.getAllActorAttributes !== 'function') {
-      console.error("Actor or getAllActorAttributes function not found.");
-      return;
-  }
-
-  const actorAttributes = actor.getAllActorAttributes();
-
-  // Initialize the effect properly
-  let effect;
-  if (Object.keys(effectData).length > 0) {
-    effect = new CustomEffect(effectData);  // Existing effect
-  } else {
-    effect = new CustomEffect({});  // New effect
-  }
-  console.log("Debug 1 render");
-  renderTemplate("systems/nazrudin/templates/item/parts/effect-configure.hbs", {
-      effectName: effect.name || "",
-      effectDuration: effect.duration || 1,
-      statToChanges: effect.statToChanges || "",
-      amountToChange: effect.amountToChange || 0,
-      effectDescription: effect.description || "",
-      actorAttributes: actorAttributes // Pass the actor's attributes to the template
-  }).then(htmlContent => {
-      new Dialog({
-          title: index === -1 ? "Configure New Effect" : "Edit Effect",
-          content: htmlContent,
-          buttons: {
-              confirm: {
-                  label: index === -1 ? "Add Effect" : "Save Changes",
-                  callback: async (html) => {
-                      const formElement = html.find('.effect-configure-form')[0];
-                      if (!formElement) {
-                          console.error("Form element not found.");
-                          return;
-                      }
-
-                      const formData = new FormData(formElement);
-                      const effectData = Object.fromEntries(formData.entries());
-
-                      // Update the effect with the new data
-                      effect.name = effectData['effect-name'];
-                      effect.duration = parseInt(effectData['effect-duration']);
-                      effect.statToChanges = effectData['effect-stat'];
-                      effect.amountToChange = parseInt(effectData['effect-value']);
-                      effect.description = effectData['effect-description'];
-
-                      const effects = app.object.system.effects || [];
-                      if (index === -1) {
-                          effects.push(effect.toObject()); // Save the effect as a plain object
-                      } else {
-                          effects[index] = effect.toObject();
-                      }
-
-                      await app.object.update({ 'system.effects': effects });
-
-                      console.log("Effect saved:", effect);
-                      app.render();
-                  }
-              },
-              cancel: {
-                  label: "Cancel"
-              }
-          },
-          default: "confirm"
-      }).render(true);
-  }).catch(err => console.error("Template rendering failed:", err));
-}
 
 
 ////-------------------------TEST-----------------------////
@@ -1295,6 +1157,44 @@ function confirmMovementDialog(actorName, apReduction) {
   });
 }
 
-function generateUUID() {
-  return `id-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+
+//----------------------------------------------------------------------------------------------//
+
+// Function to handle creating or editing a spell
+function openSpellDialog(spellData = {}, onSave) {
+  renderTemplate("path/to/spell-template.hbs", {
+      spell: spellData // pass the spell data to the template
+  }).then(htmlContent => {
+      new Dialog({
+          title: spellData.name ? "Edit Spell" : "Create New Spell",
+          content: htmlContent,
+          buttons: {
+              save: {
+                  label: "Save Spell",
+                  callback: async (html) => {
+                      // Extract the data from the form and update the spell object
+                      const formData = new FormData(html[0]);
+                      const updatedSpellData = Object.fromEntries(formData.entries());
+
+                      // You can manage the effects using openEffectDialog if needed
+                      if (onSave) {
+                          onSave(updatedSpellData);
+                      }
+                  }
+              },
+              cancel: {
+                  label: "Cancel"
+              }
+          }
+      }).render(true);
+  });
 }
+
+// Use the Spell Dialog
+html.find('.edit-spell-button').click((event) => {
+  event.preventDefault();
+  openSpellDialog(spellData, (updatedData) => {
+      // Save the spell data here
+      console.log("Spell updated:", updatedData);
+  });
+});

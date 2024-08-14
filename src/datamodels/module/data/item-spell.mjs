@@ -1,8 +1,7 @@
-import BoilerplateItemBase from "./base-item.mjs";
-import { CustomEffect } from './CustomEffect.js'; // Ensure this path is correct
+import { CustomEffect } from './CustomEffect.js';
 
 export default class BoilerplateSpell extends BoilerplateItemBase {
-
+  
   static defineSchema() {
     const fields = foundry.data.fields;
     const schema = super.defineSchema();
@@ -14,23 +13,27 @@ export default class BoilerplateSpell extends BoilerplateItemBase {
     schema.type = new fields.StringField({ required: true, nullable: false, initial: "Buff" });
     schema.spellDamage = new fields.NumberField({ required: false, nullable: false, initial: 10, min: 0 });
 
-    // Define the effects array as an array of CustomEffect instances
     schema.effects = new fields.ArrayField(
-      new fields.EmbeddedDataField(CustomEffect),
-      { initial: [] } // Initialize as an empty array by default
+      new fields.SchemaField({
+        name: new fields.StringField({ required: true, initial: "Unnamed Effect" }),
+        duration: new fields.NumberField({ required: true, initial: 1 }), 
+        statToChanges: new fields.StringField({ required: true, initial: "strength" }),
+        amountToChange: new fields.NumberField({ required: true, initial: 1 }),
+        description: new fields.StringField({ initial: "Effect description" }),
+        id: new fields.StringField({ initial: () => `id-${Date.now()}-${Math.floor(Math.random() * 1000000)}` })
+      }),
+      { initial: [] }
     );
 
     return schema;
   }
 
   async castSpell(targetActor) {
-    // Example: Apply the effects to the target actor
     this.system.effects.forEach(effectData => {
       const effect = new CustomEffect(effectData);
       this.applyEffect(targetActor, effect);
     });
 
-    // Handle other spell logic, like damage
     const roll = new Roll(`1d20 + ${this.system.spellDamage}`);
     await roll.evaluate({ async: true });
     roll.toMessage({
@@ -40,18 +43,6 @@ export default class BoilerplateSpell extends BoilerplateItemBase {
   }
 
   applyEffect(targetActor, effect) {
-    // Logic to apply the effect to the target actor
-    console.log(`Applying effect ${effect.name} to ${targetActor.name}`);
-
-    // Example: Modify a stat on the target actor
-    effect.changes.forEach(change => {
-      const currentValue = targetActor.system.attributes[change.stat].value;
-      const newValue = currentValue + change.value;
-      targetActor.update({ [`system.attributes.${change.stat}.value`]: newValue });
-
-      console.log(`${targetActor.name}'s ${change.stat} is now ${newValue}`);
-    });
-
-    // You could also handle the effect duration here, e.g., using a hook to remove the effect after a number of rounds.
+    effect.apply(targetActor);
   }
 }

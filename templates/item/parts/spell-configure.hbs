@@ -1,0 +1,17 @@
+<form class="spell-configure-form">
+  <div class="form-group">
+    <label>Spell Name</label>
+    <input type="text" name="name" value="{{spellData.name}}" />
+  </div>
+  <!-- Additional spell fields -->
+  <div class="form-group">
+    <label>Effects</label>
+    {{#each spellData.effects as |effect|}}
+      <div>
+        <input type="text" name="effect-name" value="{{effect.name}}" />
+        <input type="number" name="effect-duration" value="{{effect.duration}}" />
+        <!-- Additional effect fields -->
+      </div>
+    {{/each}}
+  </div>
+</form>

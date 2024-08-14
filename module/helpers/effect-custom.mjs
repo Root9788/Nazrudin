@@ -1,21 +1,27 @@
+// CustomEffect class
 export class CustomEffect {
   constructor({ name, duration, statToChanges, amountToChange, description, id }) {
     this._id = id || this.generateUUID();
     this._name = name || "Unnamed Effect";
-    this._duration = duration || 1; // Default duration is 1 round
-    this._statToChanges = statToChanges || []; // Default is an empty array
+    this._duration = duration || 1; 
+    this._statToChanges = statToChanges || []; 
     this._amountToChange = amountToChange || 0;
     this._description = description || "No description";
   }
 
-  // Getter and Setter for UUID
-  get id() {
-    return this._id;
+  generateUUID() {
+    return `id-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
   }
 
-  // Function to generate a UUID
-  generateUUID() {
-    return uuidv4(); // Generates a version 4 UUID
+  toObject() {
+    return {
+      id: this._id,
+      name: this._name,
+      duration: this._duration,
+      statToChanges: this._statToChanges,
+      amountToChange: this._amountToChange,
+      description: this._description
+    };
   }
 
   // Getter and Setter for name
@@ -61,23 +67,6 @@ export class CustomEffect {
 
   set description(value) {
     this._description = value;
-  }
-
-  // Method to return the effect as a plain object (useful for saving data)
-  toObject() {
-    return {
-      uuid: this._uuid,
-      name: this._name,
-      duration: this._duration,
-      statToChanges: this._statToChanges,
-      amountToChange: this._amountToChange,
-      description: this._description
-    };
-  }
-
-  // Function to generate a UUID
-  generateUUID() {
-    return `id-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
   }
 
   // Method to apply the effect (optional)
