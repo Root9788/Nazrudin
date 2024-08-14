@@ -728,39 +728,31 @@ Hooks.on("canvasReady", canvas => {
   });
 });
 
+let movementInProgress = false;
+
 Hooks.on("updateToken", (tokenDocument, updateData, options, userId) => {
+  if (movementInProgress) return; // Skip the hook if we're already handling movement
+  
+  const token = canvas.tokens.get(tokenDocument.id);
+  const actor = token.actor;
+  
   if (updateData.x !== undefined || updateData.y !== undefined || updateData.rotation !== undefined) {
-    const token = canvas.tokens.get(tokenDocument.id);
     if (token.actor.type === "character") { // Ensure it's a character token
         renderTokenGraphics(token);
     }
+
+    handleTokenMovement(token, tokenDocument, updateData)
+      .then(() => {
+        console.log("Token movement handled successfully.");
+      })
+      .catch(error => {
+        console.error("Error handling token movement:", error);
+      });
   }
 });
 
 
 //<--------------------------Hooks for Combat------------------------------------>
-
-//On Start of Player Turn Hook
-/* Hooks.on("updateCombat", async (combat, changed, options, userId) => {
-  // Check if the turn has changed
-  console.log("Debug combatant");
-  console.log(combat);
-  if (changed.turn !== undefined) {
-      const currentToken = await combat.turns[combat.turn].actorId;
-      let actor = getActorById(currentToken);
-      console.log(currentToken);
-      console.log(game);
-      if (actor.type === "character") { // Ensure that the actor is a character
-        await resetCharacterValues(actor._id);
-        await triggerStartOfTurnEffects(actor._id);
-      }
-      actor.getActiveTokens().forEach(token => {
-        if(token.type === "character"){
-          renderTokenGraphics(token);
-        }
-      });
-  }
-}); */
 
 Hooks.on("updateCombat", async (combat, changed, options, userId) => {
   // Check if the turn has changed
@@ -879,165 +871,111 @@ function animateText(textSprite) {
   animateFunc();
 }
 
-/* function renderActionPoints(token) {
-  // Ensure you're using the latest actor data
-  console.log("render");
-  token = canvas.tokens.get(token.id);
-  if (!token) return; // Token not found or not visible
-  const actionPoints = token.actor.system.ActionPoints.curValue;
-  const text = new PIXI.Text(`AP: ${actionPoints}`, {
-      fontFamily: 'Arial',
-      fontSize: 32,
-      fill: 0xFFFF00,
-      stroke: 0x000000,
-      strokeThickness: 4
-  });
-  text.position.set(token.w / 2 - text.width / 2, -37);
+function renderTokenGraphics(token) {
+  // Remove old health bar and related graphics if they exist
+  if (token.healthBar) {
+      token.removeChild(token.healthBar);
+      token.healthBar.destroy();
+  }
+
+  if (token.healthBarBackground) {
+      token.removeChild(token.healthBarBackground);
+      token.healthBarBackground.destroy();
+  }
+
+  if (token.healthText) {
+      token.removeChild(token.healthText);
+      token.healthText.destroy();
+  }
+
+  // Remove old action points bar and related graphics if they exist
+  if (token.actionPointsBackground) {
+      token.removeChild(token.actionPointsBackground);
+      token.actionPointsBackground.destroy();
+  }
 
   if (token.actionPointsText) {
       token.removeChild(token.actionPointsText);
       token.actionPointsText.destroy();
   }
 
-  token.addChild(text);
-  token.actionPointsText = text;
-} */
-
-/* function renderActionPoints(token) {
-  // Remove old action points bar if it exists
-  if (token.actionPointsBar) {
-      token.removeChild(token.actionPointsBar);
-      token.actionPointsBar.destroy();
-  }
-
-  const maxActionPoints = token.actor.system.ActionPoints.maxValue;
+  // Fetch current health and action points from the actor
+  const currentHealth = token.actor.system.health.value;
+  const maxHealth = token.actor.system.health.max;
   const currentActionPoints = token.actor.system.ActionPoints.curValue;
+  const currentTmpBonusAP = token.actor.system.ActionPoints.tmpBonus;
+  const maxActionPoints = token.actor.system.ActionPoints.maxValue;
 
-  // Create a new PIXI graphics object for the action points bar
-  const bar = new PIXI.Graphics();
-  bar.beginFill(0x00FF00); // Green color for the filled part
-  const barWidth = token.w * (currentActionPoints / maxActionPoints);
-  const barHeight = 5; // Height of the bar in pixels
-  bar.drawRect(0, 0, barWidth, barHeight);
-  bar.endFill();
+  // Draw Health Bar Above the Token
+  const barHeight = 10;
+  const barWidth = token.w; // Width of the health bar is the same as the token width
+  const barX = 0; // Start at the left edge of the token
+  const barY = -15; // Position above the token
 
-  bar.beginFill(0xFF0000); // Red color for the empty part
-  bar.drawRect(barWidth, 0, token.w - barWidth, barHeight);
-  bar.endFill();
+  // Background for the health bar
+  const barBackground = new PIXI.Graphics();
+  barBackground.beginFill(0x333333); // Dark gray background
+  barBackground.drawRect(barX, barY, barWidth, barHeight);
+  barBackground.endFill();
 
-  // Set the position of the bar slightly above the token
-  bar.position.set(token.w / 2 - token.w / 2, -10);
+  token.addChild(barBackground);
+  token.healthBarBackground = barBackground;
 
-  // Add the bar to the token
-  token.addChild(bar);
-  token.actionPointsBar = bar; // Store reference to bar in token for easy access and removal
-} */
+  // Health bar itself
+  const healthBar = new PIXI.Graphics();
+  const healthBarWidth = (barWidth * currentHealth) / maxHealth;
 
-  function renderTokenGraphics(token) {
-    // Remove old health bar and related graphics if they exist
-    if (token.healthBar) {
-        token.removeChild(token.healthBar);
-        token.healthBar.destroy();
-    }
+  healthBar.beginFill(0xFF0000); // Red color for the health bar
+  healthBar.drawRect(barX, barY, healthBarWidth, barHeight);
+  healthBar.endFill();
 
-    if (token.healthBarBackground) {
-        token.removeChild(token.healthBarBackground);
-        token.healthBarBackground.destroy();
-    }
+  token.addChild(healthBar);
+  token.healthBar = healthBar;
 
-    if (token.healthText) {
-        token.removeChild(token.healthText);
-        token.healthText.destroy();
-    }
+  // Health text (optional)
+  const healthText = new PIXI.Text(`${currentHealth}/${maxHealth}`, {
+      fontFamily: 'Arial',
+      fontSize: 14,
+      fill: 0xFFFFFF, // White text
+      stroke: 0x000000, // Black stroke for better visibility
+      strokeThickness: 3,
+  });
+  healthText.anchor.set(0.5);
+  healthText.position.set(barX + (barWidth / 2), barY - barHeight / 2 - 2); // Position the text above the bar
 
-    // Remove old action points bar and related graphics if they exist
-    if (token.actionPointsBackground) {
-        token.removeChild(token.actionPointsBackground);
-        token.actionPointsBackground.destroy();
-    }
+  token.addChild(healthText);
+  token.healthText = healthText;
 
-    if (token.actionPointsText) {
-        token.removeChild(token.actionPointsText);
-        token.actionPointsText.destroy();
-    }
+  // Draw Action Points Below the Token
+  const apBackgroundWidth = 60; // Adjust width to fit the text nicely
+  const apBackgroundHeight = 30; // Height of the background
+  const apBackgroundX = (token.w / 2) - (apBackgroundWidth / 2); // Center horizontally relative to the token
+  const apBackgroundY = token.h + 5; // Position below the token with a 5px gap
 
-    // Fetch current health and action points from the actor
-    const currentHealth = token.actor.system.health.value;
-    const maxHealth = token.actor.system.health.max;
-    const currentActionPoints = token.actor.system.ActionPoints.curValue;
-    const currentTmpBonusAP = token.actor.system.ActionPoints.tmpBonus;
-    const maxActionPoints = token.actor.system.ActionPoints.maxValue;
+  // Background for action points
+  const apBackground = new PIXI.Graphics();
+  apBackground.beginFill(0x333333); // Dark gray background
+  apBackground.drawRoundedRect(apBackgroundX, apBackgroundY, apBackgroundWidth, apBackgroundHeight, 5); // Rounded corners
+  apBackground.endFill();
 
-    // Draw Health Bar Above the Token
-    const barHeight = 10;
-    const barWidth = token.w; // Width of the health bar is the same as the token width
-    const barX = 0; // Start at the left edge of the token
-    const barY = -15; // Position above the token
+  token.addChild(apBackground);
+  token.actionPointsBackground = apBackground;
 
-    // Background for the health bar
-    const barBackground = new PIXI.Graphics();
-    barBackground.beginFill(0x333333); // Dark gray background
-    barBackground.drawRect(barX, barY, barWidth, barHeight);
-    barBackground.endFill();
+  const aPToApply = currentActionPoints + currentTmpBonusAP;
+  // Action points text
+  const apText = new PIXI.Text(`AP: ${aPToApply}`, {
+      fontFamily: 'Arial',
+      fontSize: 20,
+      fill: 0xFFFFFF, // White text
+      stroke: 0x000000, // Black stroke for better visibility
+      strokeThickness: 4,
+  });
+  apText.anchor.set(0.5);
+  apText.position.set(apBackgroundX + (apBackgroundWidth / 2), apBackgroundY + apBackgroundHeight / 2); // Center the text on the background
 
-    token.addChild(barBackground);
-    token.healthBarBackground = barBackground;
-
-    // Health bar itself
-    const healthBar = new PIXI.Graphics();
-    const healthBarWidth = (barWidth * currentHealth) / maxHealth;
-
-    healthBar.beginFill(0xFF0000); // Red color for the health bar
-    healthBar.drawRect(barX, barY, healthBarWidth, barHeight);
-    healthBar.endFill();
-
-    token.addChild(healthBar);
-    token.healthBar = healthBar;
-
-    // Health text (optional)
-    const healthText = new PIXI.Text(`${currentHealth}/${maxHealth}`, {
-        fontFamily: 'Arial',
-        fontSize: 14,
-        fill: 0xFFFFFF, // White text
-        stroke: 0x000000, // Black stroke for better visibility
-        strokeThickness: 3,
-    });
-    healthText.anchor.set(0.5);
-    healthText.position.set(barX + (barWidth / 2), barY - barHeight / 2 - 2); // Position the text above the bar
-
-    token.addChild(healthText);
-    token.healthText = healthText;
-
-    // Draw Action Points Below the Token
-    const apBackgroundWidth = 60; // Adjust width to fit the text nicely
-    const apBackgroundHeight = 30; // Height of the background
-    const apBackgroundX = (token.w / 2) - (apBackgroundWidth / 2); // Center horizontally relative to the token
-    const apBackgroundY = token.h + 5; // Position below the token with a 5px gap
-
-    // Background for action points
-    const apBackground = new PIXI.Graphics();
-    apBackground.beginFill(0x333333); // Dark gray background
-    apBackground.drawRoundedRect(apBackgroundX, apBackgroundY, apBackgroundWidth, apBackgroundHeight, 5); // Rounded corners
-    apBackground.endFill();
-
-    token.addChild(apBackground);
-    token.actionPointsBackground = apBackground;
-
-    const aPToApply = currentActionPoints + currentTmpBonusAP;
-    // Action points text
-    const apText = new PIXI.Text(`AP: ${aPToApply}`, {
-        fontFamily: 'Arial',
-        fontSize: 20,
-        fill: 0xFFFFFF, // White text
-        stroke: 0x000000, // Black stroke for better visibility
-        strokeThickness: 4,
-    });
-    apText.anchor.set(0.5);
-    apText.position.set(apBackgroundX + (apBackgroundWidth / 2), apBackgroundY + apBackgroundHeight / 2); // Center the text on the background
-
-    token.addChild(apText);
-    token.actionPointsText = apText;
-  }
+  token.addChild(apText);
+  token.actionPointsText = apText;
+}
 
 async function deductActionPoints(actorId, amount) {
   let actor = game.actors.get(actorId);
@@ -1101,4 +1039,93 @@ function getTokenByActorId(actorId) {
   }
   // If no matching token is found, return null or undefined
   return null;
+}
+
+function handleTokenMovement(token, tokenDocument, updateData) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Calculate the original and new positions
+      const originalX = tokenDocument.x;
+      const originalY = tokenDocument.y;
+      const newX = updateData.x !== undefined ? updateData.x : originalX;
+      const newY = updateData.y !== undefined ? updateData.y : originalY;
+
+      // Calculate the movement in the X and Y axes
+      const deltaX = Math.abs(newX - originalX);
+      const deltaY = Math.abs(newY - originalY);
+
+      // Determine the number of grid units moved
+      const gridSize = canvas.grid.size;
+      const fieldsMovedX = deltaX / gridSize;
+      const fieldsMovedY = deltaY / gridSize;
+
+      // Determine the movement cost
+      let apReduction = 0;
+      let movementCost = 0.5; // token.actor.system.movementCost.value;
+
+      if (fieldsMovedX === fieldsMovedY) {
+        // Diagonal movement (top-left, top-right, bottom-left, bottom-right)
+        apReduction = 2 * movementCost * fieldsMovedX; // 1 AP per field for diagonal
+      } else {
+        // Horizontal or vertical movement
+        apReduction = movementCost * (fieldsMovedX + fieldsMovedY); // 0.5 AP per field
+      }
+
+      // Get the current Action Points
+      const currentActionPoints = token.actor.system.ActionPoints.curValue;
+
+      // Calculate the new Action Points
+      const newActionPoints = Math.max(currentActionPoints - apReduction, 0); // Prevent going below 0
+
+      // Show a confirmation dialog before reducing AP
+      let confirmMovement = await confirmMovementDialog(token.actor.name, apReduction);
+      
+      if (confirmMovement) {
+        // Update the actor's Action Points
+        await token.actor.update({ 'system.ActionPoints.curValue': newActionPoints });
+
+        // Optionally, update the token's display to show the new Action Points
+        renderTokenGraphics(token);
+
+        console.log(`${token.actor.name} moved and lost ${apReduction} Action Points. New AP: ${newActionPoints}`);
+      } else {
+        // Revert the token to its original position
+        movementInProgress = true; // Set the flag to avoid re-triggering the updateToken hook
+        await token.document.update({ x: originalX, y: originalY });
+        movementInProgress = false; // Reset the flag after the update
+
+        console.log(`${token.actor.name} movement canceled, returning to original position.`);
+      }
+
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+function confirmMovementDialog(actorName, apReduction) {
+  return new Promise((resolve) => {
+    // Create a confirmation dialog
+    let d = new Dialog({
+      title: "Confirm Movement",
+      content: `<p>Do you want to move ${actorName} and lose ${apReduction} Action Points?</p>`,
+      buttons: {
+        yes: {
+          icon: '<i class="fas fa-check"></i>',
+          label: "Yes",
+          callback: () => resolve(true)
+        },
+        no: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "No",
+          callback: () => resolve(false)
+        }
+      },
+      default: "yes",
+      close: () => resolve(false) // Resolve false if the dialog is closed without a choice
+    });
+
+    d.render(true);
+  });
 }

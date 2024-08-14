@@ -58,6 +58,9 @@
         "equipedWeapon":{
 
         },
+        "movementCost":{
+          "value": 0
+        },
         "biography": ""
       }
     },
