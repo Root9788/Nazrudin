@@ -50,7 +50,8 @@ Hooks.once('init', function () {
     item: models.BoilerplateItem,
     feature: models.BoilerplateFeature,
     spell: models.BoilerplateSpell,
-    weapon: models.BoilerplateWeapon
+    weapon: models.BoilerplateWeapon,
+    effect: models.NazurdinEffect
   }
 
   // Active Effects are never copied to the Actor,

@@ -73,36 +73,39 @@
       transition: box-shadow 0.3s ease;
     }
   </style>
-  <!-- Effects -->
+
+  <!-- Effects Section 
   <section class="spell-effects">
     <h2>Effects</h2>
     {{#each system.effects as |effect index|}}
+      {{#unless (isDuplicateEffect effect.id ../system.effects)}}
       <div class="effect flexrow">
         <div class="form-group">
           <label>Name</label>
-          <input type="text" name="system.effects.[{{index}}].name" value="{{effect.name}}" readonly/>
+          <input type="text" name="system.effects.[{{index}}].name" value="{{effect.name}}"/>
         </div>
         <div class="form-group">
           <label>Duration</label>
-          <input type="number" name="system.effects.[{{index}}].duration" value="{{effect.duration}}" min="1" readonly/>
+          <input type="number" name="system.effects.[{{index}}].duration" value="{{effect.duration}}" min="1"/>
         </div>
         <div class="form-group">
           <label>Stat</label>
-          <input type="text" name="system.effects.[{{index}}].changes.[0].stat" value="{{effect.changes.[0].stat}}" readonly/>
+          <input type="text" name="system.effects.[{{index}}].statToChanges" value="{{effect.statToChanges}}"/>
         </div>
         <div class="form-group">
           <label>Value</label>
-          <input type="number" name="system.effects.[{{index}}].changes.[0].value" value="{{effect.changes.[0].value}}" readonly/>
+          <input type="number" name="system.effects.[{{index}}].amountToChange" value="{{effect.amountToChange}}" min="0"/>
         </div>
         <div class="form-group">
           <label>Description</label>
-          <input type="text" name="system.effects.[{{index}}].description" value="{{effect.description}}" readonly/>
+          <input type="text" name="system.effects.[{{index}}].description" value="{{effect.description}}"/>
         </div>
-        <img src="\systems\nazrudin\assets\edit.svg" alt="Edit" data-index="{{index}}" class="edit-effect-button clickable-image">
+        <img src="\systems\nazrudin\assets\Edit.svg" alt="Edit" data-index="{{index}}" class="edit-effect-button clickable-image">
         <img src="\systems\nazrudin\assets\Trashcan.svg" alt="Delete" data-index="{{index}}" class="delete-effect-button clickable-image">
       </div>
+      {{/unless}}
     {{/each}}
-</section>
+  </section>-->
 
   <!-- Place the Add Image above the Save Button -->
   <div class="add-effect-container">
@@ -114,56 +117,3 @@
     <button type="submit" class="save-button-spell">Save Spell</button>
   </footer>
 </form>
-  <!--<header class='sheet-header'>
-    <img
-      class='profile-img'
-      src='{{item.img}}'
-      data-edit='img'
-      title='{{item.name}}'
-    />
-    <div class='header-fields'>
-      <h1 class='charname'><input
-          name='name'
-          type='text'
-          value='{{item.name}}'
-          placeholder='Name'
-        /></h1>
-    </div>
-  </header>
-
-  {{! Sheet Tab Navigation }}
-  <nav class='sheet-tabs tabs' data-group='primary'>
-    <a class='item' data-tab='description'>Description</a>
-    <a class='item' data-tab='attributes'>Attributes</a>
-  </nav>
-
-  {{! Sheet Body }}
-  <section class='sheet-body'>
-
-    {{! Description Tab }}
-    <div class='tab' data-group='primary' data-tab='description'>
-      {{! Editors must receive enriched text data from getData to properly handle rolls }}
-      {{editor
-        enrichedDescription
-        target='system.description'
-        engine='prosemirror'
-        button=true
-        editable=editable
-      }}
-    </div>
-
-    {{! Attributes Tab }}
-    <div class='tab attributes' data-group='primary' data-tab='attributes'>
-      {{! As you add new fields, add them in here! }}
-      <div class='resource'>
-        <label class='resource-label'>Spell Level</label>
-        <input
-          type='text'
-          name='system.spellLevel'
-          value='{{system.spellLevel}}'
-          data-dtype='Number'
-        />
-      </div>
-    </div>
-  </section>
-</form>-->

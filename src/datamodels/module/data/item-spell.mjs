@@ -1,5 +1,5 @@
 import BoilerplateItemBase from "./base-item.mjs";
-import { CustomEffect } from './CustomEffect.js'; // Assuming CustomEffect is in the same directory
+import { CustomEffect } from './CustomEffect.js'; // Ensure this path is correct
 
 export default class BoilerplateSpell extends BoilerplateItemBase {
 
@@ -14,18 +14,10 @@ export default class BoilerplateSpell extends BoilerplateItemBase {
     schema.type = new fields.StringField({ required: true, nullable: false, initial: "Buff" });
     schema.spellDamage = new fields.NumberField({ required: false, nullable: false, initial: 10, min: 0 });
 
-    // Ensure effects is initialized as an empty array by default
+    // Define the effects array as an array of CustomEffect instances
     schema.effects = new fields.ArrayField(
-      new fields.SchemaField({
-        name: new fields.StringField({ required: true, initial: "Unnamed Effect" }),
-        duration: new fields.NumberField({ required: true, initial: 1 }), // Duration in rounds
-        changes: new fields.ArrayField(new fields.SchemaField({
-          stat: new fields.StringField({ required: true, initial: "strength" }),
-          value: new fields.NumberField({ required: true, initial: 1 }),
-        })),
-        description: new fields.StringField({ initial: "Effect description" })
-      }),
-      { initial: [] }  // Initialize as an empty array by default
+      new fields.EmbeddedDataField(CustomEffect),
+      { initial: [] } // Initialize as an empty array by default
     );
 
     return schema;

@@ -163,7 +163,8 @@
     },
     "spell": {
       "templates": ["base"],
-      "spellLevel": 1
+      "amountToChange": 1,
+      "statToChange": ""
     },
     "weapon": {
       "templates": ["base"],

@@ -8,6 +8,8 @@ import { BoilerplateItemSheet } from './sheets/item-sheet.mjs';
 import { preloadHandlebarsTemplates } from './helpers/templates.mjs';
 import { BOILERPLATE } from './helpers/config.mjs';
 
+
+
 /* -------------------------------------------- */
 /*  Init Hook                                   */
 /* -------------------------------------------- */
@@ -106,6 +108,21 @@ Handlebars.registerHelper('buildFormularForActor', function (varName, weapon, ac
   options.data.root[varName] = `1d20+@abilities.${abilityMod}.mod`;
   
 
+});
+
+Handlebars.registerHelper('isDuplicateEffect', function(uuid, effects) {
+  // Track seen UUIDs
+  const seenUUIDs = [];
+
+  for (let i = 0; i < effects.length; i++) {
+    if (seenUUIDs.includes(effects[i]._uuid)) {
+      return true; // If the UUID has already been seen, it's a duplicate
+    } else {
+      seenUUIDs.push(effects[i]._uuid); // Add the UUID to the list of seen UUIDs
+    }
+  }
+  
+  return false; // Not a duplicate
 });
 
 /* -------------------------------------------- */
@@ -566,6 +583,8 @@ async function addXPToActor(actor, xpAmount) {
 
 Hooks.on('renderItemSheet', (app, html, data) => {
   
+  console.log("Debug Spells: ", app);
+
   // Add click handler for save button
   html.find('.save-button').click(async (event) => {
     event.preventDefault();
@@ -619,29 +638,53 @@ Hooks.on('renderItemSheet', (app, html, data) => {
     app.render(true); // Re-render the form to display the new effect
   }); */
   // Handle the add effect button click
-html.find('.add-effect-button').click((event) => {
-  event.preventDefault();
+  html.find('.add-effect-button').click((event) => {
+    event.preventDefault();
 
-  // Open the effect configuration dialog with empty/default values
-  openEffectDialog(app, {}, -1);
+    // Open the effect configuration dialog with empty/default values
+    openEffectDialog(app, {}, -1);
+  });
+
+  // Handle the edit effect button click
+  html.find('.edit-effect-button').click((event) => {
+    event.preventDefault();
+    
+    const index = $(event.currentTarget).data("index");
+    console.log("Debug Effect index:", index);
+    const effects = app.object.system.effects;
+    console.log("Debug Effect app:", app.object.system);
+
+
+    // Check if the effect exists at the given index
+    if (index >= 0 && index < effects.length) {
+        const effect = effects[index];
+
+        // Open the effect configuration dialog with the current effect's data
+        openEffectDialog(app, effect, index);
+    } else {
+        console.error("Effect not found at index:", index);
+    }
 });
 
-// Handle the edit effect button click
-html.find('.edit-effect-button').click((event) => {
-  event.preventDefault();
-  
-  const index = $(event.currentTarget).data("index");
-  const effects = app.object.system.effects;
+  // Handle the delete effect image click
+  html.find('.delete-effect-button').click(ev => {
+    ev.preventDefault();
+    const index = ev.currentTarget.dataset.index;
 
-  // Check if the effect exists at the given index
-  if (index >= 0 && index < effects.length) {
-      const effect = effects[index];
+    // Remove the effect at the specified index
+    app.object.system.effects.splice(index, 1);
 
-      // Open the effect configuration dialog with the current effect's data
-      openEffectDialog(app, effect, index);
-  } else {
-      console.error("Effect not found at index:", index);
-  }
+    app.render(true); // Re-render the form to update the effects list
+  });
+
+  // Handle the save button click
+  html.find('.save-button-spell').click(async (event) => {
+    event.preventDefault();
+
+
+    app.close();
+  });
+
 });
 
 /**
@@ -651,23 +694,31 @@ html.find('.edit-effect-button').click((event) => {
 * @param {Object} effect - The effect data to pre-fill the form with (empty for new effects).
 * @param {number} index - The index of the effect to edit (-1 for adding a new effect).
 */
-function openEffectDialog(app, effect = {}, index = -1) {
+function openEffectDialog(app, effectData = {}, index = -1) {
   const actor = game.actors.contents[0];
-  
+
   if (!actor || typeof actor.getAllActorAttributes !== 'function') {
       console.error("Actor or getAllActorAttributes function not found.");
       return;
   }
-  
+
   const actorAttributes = actor.getAllActorAttributes();
 
+  // Initialize the effect properly
+  let effect;
+  if (Object.keys(effectData).length > 0) {
+    effect = new CustomEffect(effectData);  // Existing effect
+  } else {
+    effect = new CustomEffect({});  // New effect
+  }
+  console.log("Debug 1 render");
   renderTemplate("systems/nazrudin/templates/item/parts/effect-configure.hbs", {
       effectName: effect.name || "",
       effectDuration: effect.duration || 1,
-      effectStat: effect.changes?.[0]?.stat || "",
-      effectValue: effect.changes?.[0]?.value || 0,
+      statToChanges: effect.statToChanges || "",
+      amountToChange: effect.amountToChange || 0,
       effectDescription: effect.description || "",
-      actorAttributes: actorAttributes, // Pass the actor's attributes to the template
+      actorAttributes: actorAttributes // Pass the actor's attributes to the template
   }).then(htmlContent => {
       new Dialog({
           title: index === -1 ? "Configure New Effect" : "Edit Effect",
@@ -685,23 +736,23 @@ function openEffectDialog(app, effect = {}, index = -1) {
                       const formData = new FormData(formElement);
                       const effectData = Object.fromEntries(formData.entries());
 
-                      const newEffect = {
-                          name: effectData['effect-name'],
-                          duration: parseInt(effectData['effect-duration']),
-                          changes: [{ stat: effectData['effect-stat'], value: parseInt(effectData['effect-value']) }],
-                          description: effectData['effect-description']
-                      };
+                      // Update the effect with the new data
+                      effect.name = effectData['effect-name'];
+                      effect.duration = parseInt(effectData['effect-duration']);
+                      effect.statToChanges = effectData['effect-stat'];
+                      effect.amountToChange = parseInt(effectData['effect-value']);
+                      effect.description = effectData['effect-description'];
 
                       const effects = app.object.system.effects || [];
                       if (index === -1) {
-                          effects.push(newEffect);
+                          effects.push(effect.toObject()); // Save the effect as a plain object
                       } else {
-                          effects[index] = newEffect;
+                          effects[index] = effect.toObject();
                       }
 
                       await app.object.update({ 'system.effects': effects });
 
-                      console.log("Effect saved:", newEffect);
+                      console.log("Effect saved:", effect);
                       app.render();
                   }
               },
@@ -713,28 +764,6 @@ function openEffectDialog(app, effect = {}, index = -1) {
       }).render(true);
   }).catch(err => console.error("Template rendering failed:", err));
 }
-
-
-
-  // Handle the delete effect image click
-  html.find('.delete-effect-button').click(ev => {
-    ev.preventDefault();
-    const index = ev.currentTarget.dataset.index;
-
-    // Remove the effect at the specified index
-    app.object.system.effects.splice(index, 1);
-
-    app.render(true); // Re-render the form to update the effects list
-  });
-
-  // Handle the save button click (if custom handling is needed)
-  html.find('.save-button-spell').click(async (event) => {
-    event.preventDefault();
-
-    app.close();
-  });
-
-});
 
 
 ////-------------------------TEST-----------------------////
@@ -1264,4 +1293,8 @@ function confirmMovementDialog(actorName, apReduction) {
 
     d.render(true);
   });
+}
+
+function generateUUID() {
+  return `id-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
 }
