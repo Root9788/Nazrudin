@@ -1,0 +1,45 @@
+<form>
+  <div>
+    <label for="name">Name</label>
+    <input type="text" name="name" value="{{spell.name}}">
+  </div>
+  <div>
+    <label for="type">Type</label>
+    <select name="type">
+      <option value="Buff" {{#if (eq spell.type 'Buff')}}selected{{/if}}>Buff</option>
+      <option value="Attack" {{#if (eq spell.type 'Attack')}}selected{{/if}}>Attack</option>
+      <!-- Add other options here -->
+    </select>
+  </div>
+
+  <div>
+    <label for="target">Target</label>
+    <select name="target">
+      <option value="Self" {{#if (eq spell.target 'Self')}}selected{{/if}}>Self</option>
+      <option value="Ally" {{#if (eq spell.target 'Ally')}}selected{{/if}}>Ally</option>
+      <option value="Enemy" {{#if (eq spell.target 'Enemy')}}selected{{/if}}>Enemy</option>
+      <option value="Area" {{#if (eq spell.target 'Area')}}selected{{/if}}>Area</option>
+      <option value="Multiple" {{#if (eq spell.target 'Multiple')}}selected{{/if}}>Multiple</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="uses">Uses</label>
+    <input type="number" name="uses" value="{{spell.uses}}">
+  </div>
+  
+  <!-- Effects -->
+  <div>
+    <h3>Effects</h3>
+    {{#each spell.effects as |effect index|}}
+      <div>
+        <span>{{effect.name}} ({{effect.type}})</span>
+        <button type="button" class="edit-effect-button" data-index="{{index}}">Edit</button>
+        <button type="button" class="delete-effect-button" data-index="{{index}}">Delete</button>
+      </div>
+    {{/each}}
+    <button type="button" class="add-effect-button">Add Effect</button>
+  </div>
+
+  <button type="submit" class="save-button">Save</button>
+</form>

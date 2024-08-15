@@ -123,57 +123,124 @@
     }
   },
   "Item": {
-    "types": [
-      "weapon",
-      "ability",
-      "spell",
-      "equipment",
-      "consumable",
-      "tool",
-      "loot",
-      "race",
-      "background",
-      "class",
-      "subclass",
-      "spell",
-      "feat",
-      "container",
-      "backpack"
-    ],
-    "htmlFields": [
-      "description.value",
-      "description.chat",
-      "unidentified.description"
-    ],
+    "types": ["spell"],
     "templates": {
-      "base": {
-        "description": ""
+      "spell": {
+        "name": {
+          "type": "String",
+          "required": true,
+          "initial": "Unnamed Spell"
+        },
+        "type": {
+          "type": "String",
+          "required": true,
+          "initial": "Buff"
+        },
+        "effects": {
+          "type": "Array",
+          "items": {
+            "type": "Object",
+            "template": "NazrudinEffect"
+          },
+          "required": false,
+          "initial": []
+        },
+        "target": {
+          "type": "String",
+          "required": true,
+          "initial": "Self"
+        },
+        "uses": {
+          "type": "Number",
+          "required": true,
+          "initial": 1
+        },
+        "range": {
+          "type": "Number",
+          "required": true,
+          "initial": 1
+        },
+        "damageValue": {
+          "type": "Number",
+          "required": false,
+          "initial": 0
+        },
+        "healValue": {
+          "type": "Number",
+          "required": false,
+          "initial": 0
+        },
+        "scalingValue": {
+          "type": "Number",
+          "required": false,
+          "initial": 1.0
+        },
+        "spellTypes": {
+          "type": "Array",
+          "items": {
+            "type": "String"
+          },
+          "required": false,
+          "initial": []
+        },
+        "damageFormula": {
+          "type": "String",
+          "required": false,
+          "initial": ""
+        },
+        "scalingAttribute": {
+          "type": "String",
+          "required": false,
+          "initial": ""
+        },
+        "radius": {
+          "type": "Number",
+          "required": false,
+          "initial": 0
+        },
+        "targetAmount": {
+          "type": "Number",
+          "required": false,
+          "initial": 1
+        }
+      },
+      "NazrudinEffect": {
+        "name": {
+          "type": "String",
+          "required": true,
+          "initial": "Unnamed Effect"
+        },
+        "type": {
+          "type": "String",
+          "required": true,
+          "initial": "Buff"
+        },
+        "triggerTime": {
+          "type": "String",
+          "required": true,
+          "initial": "onApply"
+        },
+        "duration": {
+          "type": "Number",
+          "required": true,
+          "initial": 1
+        },
+        "attributeToChange": {
+          "type": "String",
+          "required": true,
+          "initial": ""
+        },
+        "amountToChange": {
+          "type": "Number",
+          "required": true,
+          "initial": 0
+        },
+        "description": {
+          "type": "String",
+          "required": false,
+          "initial": "No description provided"
+        }
       }
-    },
-    "item": {
-      "templates": ["base"],
-      "quantity": 1,
-      "weight": 0,
-      "formula": "d20 + @str.mod + ceil(@lvl / 2)",
-      "diceNum": 0,
-      "diceSize": 0
-    },
-    "feature": {
-      "templates": ["base"]
-    },
-    "spell": {
-      "templates": ["base"],
-      "amountToChange": 1,
-      "statToChange": ""
-    },
-    "weapon": {
-      "templates": ["base"],
-      "weight": 0,
-      "damage": 0,
-      "damageDie": "d20",
-      "critRate": 20,
-      "critDamageMulti": 1.5,
-      "range": 0
     }
   }
 }

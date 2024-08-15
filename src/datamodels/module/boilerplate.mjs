@@ -1,9 +1,11 @@
 // Import document classes.
 import { BoilerplateActor } from './documents/actor.mjs';
 import { BoilerplateItem } from './documents/item.mjs';
+import { NazrudinItem } from './documents/nazrudinSpell.mjs';
 // Import sheet classes.
 import { BoilerplateActorSheet } from './sheets/actor-sheet.mjs';
 import { BoilerplateItemSheet } from './sheets/item-sheet.mjs';
+import { NazrudinSpellSheet } from './sheets/nazrudin-spell-sheet.mjs';
 // Import helper/utility classes and constants.
 import { preloadHandlebarsTemplates } from './helpers/templates.mjs';
 import { BOILERPLATE } from './helpers/config.mjs';
@@ -19,7 +21,7 @@ Hooks.once('init', function () {
   // accessible in global contexts.
   game.boilerplate = {
     BoilerplateActor,
-    BoilerplateItem,
+    NazrudinItem,
     rollItemMacro,
   };
 
@@ -68,6 +70,11 @@ Hooks.once('init', function () {
   Items.registerSheet('nazrudin', BoilerplateItemSheet, {
     makeDefault: true,
     label: 'BOILERPLATE.SheetLabels.Item',
+  });
+  Items.unregisterSheet("core", ItemSheet);
+  Items.registerSheet("nazrudin", NazrudinSpellSheet, { 
+    makeDefault: true, 
+    label: 'NAZRUDIN.SheetLabels.Item', 
   });
 
   // Preload Handlebars templates.

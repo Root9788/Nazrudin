@@ -1,9 +1,11 @@
 // Import document classes.
 import { BoilerplateActor } from './documents/actor.mjs';
 import { BoilerplateItem } from './documents/item.mjs';
+import { NazrudinItem } from './documents/nazrudinSpell.mjs';
 // Import sheet classes.
 import { BoilerplateActorSheet } from './sheets/actor-sheet.mjs';
 import { BoilerplateItemSheet } from './sheets/item-sheet.mjs';
+import { NazrudinSpellSheet } from './sheets/nazrudin-spell-sheet.mjs';
 // Import helper/utility classes and constants.
 import { preloadHandlebarsTemplates } from './helpers/templates.mjs';
 import { BOILERPLATE } from './helpers/config.mjs';
@@ -19,7 +21,7 @@ Hooks.once('init', function () {
   // accessible in global contexts.
   game.boilerplate = {
     BoilerplateActor,
-    BoilerplateItem,
+    NazrudinItem,
     rollItemMacro,
   };
 
@@ -37,7 +39,8 @@ Hooks.once('init', function () {
 
   // Define custom Document classes
   CONFIG.Actor.documentClass = BoilerplateActor;
-  CONFIG.Item.documentClass = BoilerplateItem;
+  //CONFIG.Item.documentClass = BoilerplateItem;
+  CONFIG.Item.documentClass = NazrudinSpell;
 
   // Active Effects are never copied to the Actor,
   // but will still apply to the Actor from within the Item
@@ -55,6 +58,13 @@ Hooks.once('init', function () {
     makeDefault: true,
     label: 'BOILERPLATE.SheetLabels.Item',
   });
+
+  Items.unregisterSheet("core", ItemSheet);
+  Items.registerSheet("nazrudin", NazrudinSpellSheet, { 
+    makeDefault: true, 
+    label: 'NAZRUDIN.SheetLabels.Item', 
+  });
+  //CONFIG.Item.documentClass = NazrudinSpell;  
 
   // Preload Handlebars templates.
   return preloadHandlebarsTemplates();
@@ -585,7 +595,7 @@ Hooks.on('renderItemSheet', (app, html, data) => {
   
   console.log("Debug Spells: ", app);
 
-  // Add click handler for save button
+  /* // Add click handler for save button
   html.find('.save-button').click(async (event) => {
     event.preventDefault();
     
@@ -616,12 +626,12 @@ Hooks.on('renderItemSheet', (app, html, data) => {
 
     // Optionally, close the dialog after saving
     app.close();
-  });
+  }); */
 
   // Ensure the effects array is initialized as an array
-  if (!Array.isArray(app.object.system.effects)) {
+  /* if (!Array.isArray(app.object.system.effects)) {
     app.object.system.effects = [];
-  }
+  } */
 
 });
 
@@ -1104,9 +1114,9 @@ function handleTokenMovement(token, tokenDocument, updateData) {
       // Calculate the new Action Points
       const newActionPoints = Math.max(currentActionPoints - apReduction, 0); // Prevent going below 0
 
-      // Show a confirmation dialog before reducing AP
-      let confirmMovement = await confirmMovementDialog(token.actor.name, apReduction);
-      
+      // Show a confirmation dialog before reducing AP, but only to the owner
+      let confirmMovement = await confirmMovementDialog(token.actor.name, apReduction, token.actor);
+
       if (confirmMovement) {
         // Update the actor's Action Points
         await token.actor.update({ 'system.ActionPoints.curValue': newActionPoints });
@@ -1131,8 +1141,14 @@ function handleTokenMovement(token, tokenDocument, updateData) {
   });
 }
 
-function confirmMovementDialog(actorName, apReduction) {
+function confirmMovementDialog(actorName, apReduction, actor) {
   return new Promise((resolve) => {
+    // Check if the current user is the owner of the actor
+    if (!actor.isOwner) {
+      resolve(true); // Automatically resolve true if the user is not the owner
+      return;
+    }
+
     // Create a confirmation dialog
     let d = new Dialog({
       title: "Confirm Movement",
@@ -1156,6 +1172,7 @@ function confirmMovementDialog(actorName, apReduction) {
     d.render(true);
   });
 }
+
 
 
 //----------------------------------------------------------------------------------------------//
