@@ -789,6 +789,7 @@ Hooks.on("updateToken", (tokenDocument, updateData, options, userId) => {
   
   const token = canvas.tokens.get(tokenDocument.id);
   const actor = token.actor;
+  console.log(actor);
   
   if (updateData.x !== undefined || updateData.y !== undefined || updateData.rotation !== undefined) {
     if (token.actor.type === "character") { // Ensure it's a character token
@@ -1131,9 +1132,25 @@ function handleTokenMovement(token, tokenDocument, updateData) {
       // Calculate the new Action Points
       const newActionPoints = Math.max(currentActionPoints - apReduction, 0); // Prevent going below 0
 
+
+      //Change_Martin: add for to find playerowner id
       // Show a confirmation dialog before reducing AP
+      let actor = token.actor;
+      // Check actor permissions to find the owner who is not a GM
+      let ownerUserId = null;
+
+      for (let [userId, permission] of Object.entries(actor.permission)) {
+          // Check if the permission level is owner (3) and the user is not a GM
+          let user = game.users.get(userId);
+          if (permission === 3 && user && !user.isGM) {
+              ownerUserId = userId;
+              break;
+          }
+      }
       let confirmMovement = await confirmMovementDialog(token.actor.name, apReduction);
       
+
+
       if (confirmMovement) {
         // Update the actor's Action Points
         await token.actor.update({ 'system.ActionPoints.curValue': newActionPoints });
@@ -1160,26 +1177,33 @@ function handleTokenMovement(token, tokenDocument, updateData) {
 
 function confirmMovementDialog(actorName, apReduction) {
   return new Promise((resolve) => {
+    //Change_Martin: add if to check if token has Playerowner and render only for ownerUserId -> Player
     // Create a confirmation dialog
-    let d = new Dialog({
-      title: "Confirm Movement",
-      content: `<p>Do you want to move ${actorName} and lose ${apReduction} Action Points?</p>`,
-      buttons: {
-        yes: {
-          icon: '<i class="fas fa-check"></i>',
-          label: "Yes",
-          callback: () => resolve(true)
+    if(ownerUserId){
+      let d = new Dialog({
+        title: "Confirm Movement",
+        content: `<p>Do you want to move ${actorName} and lose ${apReduction} Action Points?</p>`,
+        buttons: {
+          yes: {
+            icon: '<i class="fas fa-check"></i>',
+            label: "Yes",
+            callback: () => resolve(true)
+          },
+          no: {
+            icon: '<i class="fas fa-times"></i>',
+            label: "No",
+            callback: () => resolve(false)
+          }
         },
-        no: {
-          icon: '<i class="fas fa-times"></i>',
-          label: "No",
-          callback: () => resolve(false)
-        }
-      },
-      default: "yes",
-      close: () => resolve(false) // Resolve false if the dialog is closed without a choice
-    });
-
-    d.render(true);
+        default: "yes",
+        close: () => resolve(false) // Resolve false if the dialog is closed without a choice
+      });
+  
+      d.render(true, {user: ownerUserId});
+    }
+    else{
+      console.log("No owner found for this token")
+    }
+    
   });
 }
