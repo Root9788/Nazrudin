@@ -9,6 +9,7 @@ export const preloadHandlebarsTemplates = async function () {
     'systems/nazrudin/templates/actor/parts/actor-features.hbs',
     'systems/nazrudin/templates/actor/parts/actor-items.hbs',
     'systems/nazrudin/templates/actor/parts/actor-weapons.hbs',
+    'systems/nazrudin/templates/actor/parts/actor-roleplayitems.hbs',
     'systems/nazrudin/templates/actor/parts/actor-spells.hbs',
     'systems/nazrudin/templates/actor/parts/actor-effects.hbs',
     "systems/nazrudin/templates/actor/parts/actor-schadenswerte.hbs",
