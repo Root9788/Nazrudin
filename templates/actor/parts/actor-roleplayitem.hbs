@@ -1,0 +1,192 @@
+<!-- Weapon Selection -->
+<div class="weapon-selection">
+  <label for="weapon-select">SLOT 1 Waffe:</label>
+  <select id="weapon-select" name="system.selectedWeaponSlot1">
+    <!-- Default 'None' option -->
+    <option value="" {{#if (eq ../system.selectedWeaponSlot1 "")}}selected{{/if}}>None</option>
+    
+    <!-- Iterate through available weapons -->
+    {{#each weapons as |weapon|}}
+      <option value="{{weapon._id}}" {{#if (eq weapon._id ../system.selectedWeaponSlot1)}}selected{{/if}}>
+        {{weapon.name}}
+      </option>
+    {{/each}}
+  </select>
+  {{setById "weapon1" weapons system.selectedWeaponSlot1}}
+  {{buildFormularForActor "formular" weapon1 system.selectedWeaponSlot1}}
+
+  <!-- Conditionally display the roll dice image if a weapon is selected -->
+  {{#if weapon1._id}}
+    <label for="rollWeapon" class="rollable" data-id="{{weapon1._id}}">
+      <img src="systems/nazrudin/assets/rollDice.svg" alt="Dice" style="width: 28px; height: 28px; vertical-align: middle;">
+    </label>
+  {{else}}
+    <!-- Optionally show some placeholder or leave it empty if no weapon is selected -->
+    <label for="rollWeapon" class="rollable" style="display: none;"></label>
+  {{/if}}
+</div>
+
+<!-- Weapon Selection -->
+<div class="weapon-selection2">
+  <label for="weapon-select2">SLOT 2 Waffe:</label>
+  <select id="weapon-select2" name="system.selectedWeaponSlot2">
+    <!-- Default 'None' option -->
+    <option value="" {{#if (eq ../system.selectedWeaponSlot2 "")}}selected{{/if}}>None</option>
+    
+    <!-- Iterate through available weapons -->
+    {{#each weapons as |weapon|}}
+      <option value="{{weapon._id}}" {{#if (eq weapon._id ../system.selectedWeaponSlot2)}}selected{{/if}}>
+        {{weapon.name}}
+      </option>
+    {{/each}}
+  </select>
+</div>
+
+<!-- Weapon Selection -->
+<div class="weapon-selection3">
+  <label for="weapon-select3">SLOT 3 Waffe:</label>
+  <select id="weapon-select3" name="system.selectedWeaponSlot3">
+    <!-- Default 'None' option -->
+    <option value="" {{#if (eq ../system.selectedWeaponSlot3 "")}}selected{{/if}}>None</option>
+    
+    <!-- Iterate through available weapons -->
+    {{#each weapons as |weapon|}}
+      <option value="{{weapon._id}}" {{#if (eq weapon._id ../system.selectedWeaponSlot3)}}selected{{/if}}>
+        {{weapon.name}}
+      </option>
+    {{/each}}
+  </select>
+</div>
+
+<!-- Weapon Selection -->
+<div class="weapon-selection4">
+  <label for="weapon-select4">SLOT 4 Waffe:</label>
+  <select id="weapon-select4" name="system.selectedWeaponSlot4">
+    <!-- Default 'None' option -->
+    <option value="" {{#if (eq ../system.selectedWeaponSlot4 "")}}selected{{/if}}>None</option>
+    
+    <!-- Iterate through available weapons -->
+    {{#each weapons as |weapon|}}
+      <option value="{{weapon._id}}" {{#if (eq weapon._id ../system.selectedWeaponSlot4)}}selected{{/if}}>
+        {{weapon.name}}
+      </option>
+    {{/each}}
+  </select>
+</div>
+
+<!-- Weapon Selection -->
+<div class="weapon-selection5">
+  <label for="weapon-select5">SLOT 4 Waffe:</label>
+  <select id="weapon-select5" name="system.selectedWeaponSlot5">
+    <!-- Default 'None' option -->
+    <option value="" {{#if (eq ../system.selectedWeaponSlot5 "")}}selected{{/if}}>None</option>
+    
+    <!-- Iterate through available weapons -->
+    {{#each weapons as |weapon|}}
+      <option value="{{weapon._id}}" {{#if (eq weapon._id ../system.selectedWeaponSlot5)}}selected{{/if}}>
+        {{weapon.name}}
+      </option>
+    {{/each}}
+  </select>
+</div>
+
+<!-- Weapon Details -->
+<div class="weapon-details">
+  <!--{{setById "weapon1" weapons system.selectedWeaponSlot1}}-->
+  
+  {{!-- Debug output to see what weapon is selected --}}
+  {{debug (getById weapons system.selectedWeaponSlot1)}}
+  
+  {{#if weapon1}}
+    <h3>{{weapon1.name}}</h3>
+    <p>Type: {{weapon1.type}}</p>
+    <p>Damage: {{weapon1.system.damage}}</p>
+    <p>Hit Formula: {{weapon1.system.formula}}</p>
+    <p>Counter: {{weapon1.system.counter}}</p>
+    <p>Evasion: {{weapon1.system.evasion}}</p>
+    <p>Critical Rate: {{weapon1.system.critRate}}</p>
+    <p>Range: {{weapon1.system.range}}</p>       
+  {{else}}
+    <p>No weapon selected.</p>
+  {{/if}}
+</div>
+
+<div class="weapon-details2">
+  {{setById "weapon2" weapons system.selectedWeaponSlot2}}
+  
+  {{!-- Debug output to see what weapon is selected --}}
+  {{debug (getById weapons system.selectedWeaponSlot2)}}
+  
+  {{#if weapon2}}
+    <h3>{{weapon2.name}}</h3>
+    <p>Type: {{weapon2.type}}</p>
+    <p>Damage: {{weapon2.system.damage}}</p>
+    <p>Hit Formula: {{weapon2.system.formula}}</p>
+    <p>Counter: {{weapon2.system.counter}}</p>
+    <p>Evasion: {{weapon2.system.evasion}}</p>
+    <p>Critical Rate: {{weapon.system.critRate}}</p>
+    <p>Range: {{weapon2.system.range}}</p>       
+  {{else}}
+    <p>No weapon selected.</p>
+  {{/if}}
+</div>
+
+<div class="weapon-details3">
+  {{setById "weapon3" weapons system.selectedWeaponSlot3}}
+  
+  {{!-- Debug output to see what weapon is selected --}}
+  {{debug (getById weapons system.selectedWeaponSlot3)}}
+  
+  {{#if weapon3}}
+    <h3>{{weapon3.name}}</h3>
+    <p>Type: {{weapon3.type}}</p>
+    <p>Damage: {{weapon3.system.damage}}</p>
+    <p>Hit Formula: {{weapon3.system.formula}}</p>
+    <p>Counter: {{weapon3.system.counter}}</p>
+    <p>Evasion: {{weapon3.system.evasion}}</p>
+    <p>Critical Rate: {{weapon3.system.critRate}}</p>
+    <p>Range: {{weapon3.system.range}}</p>       
+  {{else}}
+    <p>No weapon selected.</p>
+  {{/if}}
+</div>
+
+<div class="weapon-details4">
+  {{setById "weapon4" weapons system.selectedWeaponSlot4}}
+  
+  {{!-- Debug output to see what weapon is selected --}}
+  {{debug (getById weapons system.selectedWeaponSlot4)}}
+  
+  {{#if weapon4}}
+    <h3>{{weapon4.name}}</h3>
+    <p>Type: {{weapon4.type}}</p>
+    <p>Damage: {{weapon4.system.damage}}</p>
+    <p>Hit Formula: {{weapon4.system.formula}}</p>
+    <p>Counter: {{weapon4.system.counter}}</p>
+    <p>Evasion: {{weapon4.system.evasion}}</p>
+    <p>Critical Rate: {{weapon4.system.critRate}}</p>
+    <p>Range: {{weapon4.system.range}}</p>       
+  {{else}}
+    <p>No weapon selected.</p>
+  {{/if}}
+</div>
+
+<div class="weapon-details5">
+  {{setById "weapon5" weapons system.selectedWeaponSlot5}}
+  
+  {{!-- Debug output to see what weapon is selected --}}
+  {{debug (getById weapons system.selectedWeaponSlot5)}}
+  
+  {{#if weapon5}}
+    <h3>{{weapon5.name}}</h3>
+    <p>Type: {{weapon5.type}}</p>
+    <p>Damage: {{weapon5.system.damage}}</p>
+    <p>Hit Formula: {{weapon5.system.formula}}</p>
+    <p>Counter: {{weapon5.system.counter}}</p>
+    <p>Evasion: {{weapon5.system.evasion}}</p>
+    <p>Critical Rate: {{weapon5.system.critRate}}</p>
+    <p>Range: {{weapon5.system.range}}</p>       
+  {{else}}
+    <p>No weapon selected.</p>
+  {{/if}}
+</div>

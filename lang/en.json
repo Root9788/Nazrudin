@@ -44,7 +44,8 @@
       "item": "Item",
       "feature": "Feature",
       "spell": "Spell",
-      "weapon": "Weapon"
+      "weapon": "Weapon",
+      "roleplayitem": "Roleplayitem"
     }
   }
 }
