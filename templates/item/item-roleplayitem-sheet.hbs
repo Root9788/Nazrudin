@@ -13,17 +13,26 @@
     </div>
   </header>
 
-  <div class='form-group'>
+  {{!-- <div class='form-group'>
     <h2>Description</h2>
   </div>
 
   <section class='sheet-body'>
-    <div class='form-group' data-group='primary' data-tab='description'>
+    <div class='form-group'>
       {{editor enrichedDescription target='system.description' engine='prosemirror' button=true editable=editable}}
     </div>
 
-  </section>
+  </section> --}}
 
+  <nav class='sheet-tabs tabs' data-group='primary'>
+    <a class='item' data-tab='description'>Description</a>
+  </nav>
+
+  <section class='sheet-body'>
+    <div class='tab' data-group='primary' data-tab='description'>
+      {{editor enrichedDescription target='system.description' engine='prosemirror' button=true editable=editable}}
+    </div>
+  </section>
 
 
 </form>
