@@ -283,4 +283,36 @@ export class BoilerplateActorSheet extends ActorSheet {
       return roll;
     }
   }
+
+  //Change Martin
+  activateListeners(html) {
+    super.activateListeners(html);
+
+    // Add click event for expanding/collapsing item description
+    html.find('.inventory-item').click(event => {
+      const description = $(event.currentTarget).next('.item-description');
+      description.toggle();
+    });
+
+    // Add drag and drop functionality
+    html.find('.inventory-item').each((index, element) => {
+      element.setAttribute('draggable', true);
+
+      element.addEventListener('dragstart', event => {
+        event.dataTransfer.setData('text/plain', event.target.dataset.itemId);
+      });
+    });
+
+    html.find('.inventory-list').on('drop', event => {
+      event.preventDefault();
+      const itemId = event.originalEvent.dataTransfer.getData('text/plain');
+      const draggedItem = html.find(`[data-item-id="${itemId}"]`);
+      $(event.currentTarget).append(draggedItem);
+    });
+
+    html.find('.inventory-list').on('dragover', event => {
+      event.preventDefault();
+    });
+  }
+
 }
