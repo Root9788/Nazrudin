@@ -364,3 +364,50 @@
 .boilerplate .effects .item .effect-controls {
   border: none;
 }
+
+
+/* Change Martin */
+
+.inventory-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.inventory-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.inventory-item img.item-image {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.inventory-item .item-name {
+  flex-grow: 1;
+}
+
+.inventory-item .item-quantity {
+  margin-left: 10px;
+}
+
+.item-description {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.item-description p {
+  margin: 0;
+}

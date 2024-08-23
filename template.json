@@ -176,13 +176,7 @@
       "range": 0
     },
     "roleplayitem": {
-      "templates": ["base"],
-      "weight": 0,
-      "damage": 0,
-      "damageDie": "d20",
-      "critRate": 20,
-      "critDamageMulti": 1.5,
-      "range": 0
+      "templates": ["base"]
     }
   }
 }

@@ -13,16 +13,18 @@
     </div>
   </header>
 
-  {{!-- <div class='form-group'>
-    <h2>Description</h2>
+  <!-- Quantity Field -->
+  <div class='form-group'>
+    <label for='item-quantity'>Quantity</label>
+    <input id='item-quantity' name='system.quantity' type='number' value='{{system.quantity}}' placeholder='0' min='0'/>
   </div>
 
-  <section class='sheet-body'>
-    <div class='form-group'>
-      {{editor enrichedDescription target='system.description' engine='prosemirror' button=true editable=editable}}
-    </div>
+  
 
-  </section> --}}
+  
+
+
+
 
   <nav class='sheet-tabs tabs' data-group='primary'>
     <a class='item' data-tab='description'>Description</a>
